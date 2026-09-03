@@ -73,27 +73,67 @@
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span><%= currentUser.name.split(' ')[0] %></span>
+              <% if (currentUser.role === 'admin') { %>
+                <span style="background: #4f46e5; color: #fff; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 700;">Admin</span>
+              <% } else if (currentUser.role === 'supplier') { %>
+                <span style="background: #0891b2; color: #fff; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 700;">Supplier</span>
+              <% } %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
             <div class="dropdown-menu">
               <% if (currentUser.role === 'admin') { %>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; padding: 0.4rem 1rem;">
+                  Admin Control
+                </div>
                 <a href="/admin" class="dropdown-item" style="color: var(--primary); font-weight: 700;">
-                  <span>⚡ Admin Console</span>
+                  ⚡ Executive Dashboard
+                </a>
+                <a href="/admin/products" class="dropdown-item">
+                  📦 Inventory & Stock
+                </a>
+                <a href="/admin/categories" class="dropdown-item">
+                  🏷️ Category Studio
+                </a>
+                <a href="/admin/suppliers" class="dropdown-item">
+                  🤝 Supplier Directory
+                </a>
+                <a href="/admin/orders" class="dropdown-item">
+                  🚚 Customer Orders
+                </a>
+                <div class="dropdown-divider"></div>
+              <% } else if (currentUser.role === 'supplier') { %>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: #0891b2; font-weight: 800; padding: 0.4rem 1rem;">
+                  Supplier Portal
+                </div>
+                <a href="/supplier" class="dropdown-item" style="color: #0891b2; font-weight: 700;">
+                  🏭 Operations Dashboard
+                </a>
+                <a href="/supplier/products" class="dropdown-item">
+                  📦 Manage Stock Levels
+                </a>
+                <a href="/supplier/products/new" class="dropdown-item">
+                  ➕ List New Product
+                </a>
+                <a href="/supplier/orders" class="dropdown-item">
+                  🚚 Fulfillment Orders
                 </a>
                 <div class="dropdown-divider"></div>
               <% } %>
               <a href="/orders" class="dropdown-item">📦 My Orders</a>
-              <a href="/profile" class="dropdown-item">⚙️ Account Settings</a>
+              <a href="/wishlist" class="dropdown-item">❤️ Saved Wishlist</a>
+              <a href="/profile" class="dropdown-item">⚙️ Account Profile</a>
               <div class="dropdown-divider"></div>
               <a href="/auth/logout" class="dropdown-item" style="color: var(--danger);">🚪 Sign Out</a>
             </div>
           </div>
         <% } else { %>
-          <a href="/auth/login" class="btn btn-primary btn-sm">
-            Sign In
-          </a>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <a href="/auth/login" class="btn btn-primary btn-sm">
+              Sign In
+            </a>
+          </div>
         <% } %>
       </div>
     </div>
@@ -110,7 +150,7 @@
           <% if (typeof navCategories !== 'undefined') { %>
             <% navCategories.forEach(cat => { %>
               <a href="/shop?category=<%= encodeURIComponent(cat.name) %>" class="sub-nav-link <%= typeof query !== 'undefined' && query.category && query.category.toLowerCase() === cat.name.toLowerCase() ? 'active' : '' %>">
-                <%= cat.name %>
+                <span><%= cat.icon || '🏷️' %></span> <%= cat.name %>
               </a>
             <% }) %>
           <% } %>

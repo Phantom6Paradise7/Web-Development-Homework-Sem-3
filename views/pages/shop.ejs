@@ -5,11 +5,11 @@
     <% } else if (activeFilters.q) { %>
       Search results for "<%= activeFilters.q %>"
     <% } else { %>
-      Explore All Products
+      Explore Marketplace Catalog
     <% } %>
   </h1>
   <p style="color: var(--text-muted); font-size: 0.95rem;">
-    Showing <%= products.length %> of <%= totalProducts %> items available in stock
+    Showing <%= products.length %> of <%= totalProducts %> items available across certified merchants
   </p>
 </div>
 
@@ -35,7 +35,7 @@
               <%= !activeFilters.category || activeFilters.category === 'all' ? 'checked' : '' %>
               onchange="document.getElementById('filterForm').submit()"
             >
-            <span>All Categories</span>
+            <span>🔥 All Categories</span>
           </label>
           <% if (categories && categories.length > 0) { %>
             <% categories.forEach(cat => { %>
@@ -47,10 +47,29 @@
                   <%= activeFilters.category && activeFilters.category.toLowerCase() === cat.name.toLowerCase() ? 'checked' : '' %>
                   onchange="document.getElementById('filterForm').submit()"
                 >
-                <span><%= cat.name %></span>
+                <span><%= cat.icon || '🏷️' %> <%= cat.name %></span>
               </label>
             <% }) %>
           <% } %>
+        </div>
+      </div>
+
+      <!-- Availability / In Stock Filter -->
+      <div class="filter-group">
+        <div class="filter-heading">
+          <span>Availability</span>
+        </div>
+        <div class="filter-options">
+          <label class="filter-radio-label" style="cursor: pointer;">
+            <input 
+              type="checkbox" 
+              name="inStock" 
+              value="true" 
+              <%= activeFilters.inStock === 'true' ? 'checked' : '' %>
+              onchange="document.getElementById('filterForm').submit()"
+            >
+            <span>In Stock Only</span>
+          </label>
         </div>
       </div>
 
@@ -64,7 +83,7 @@
           <span style="color: var(--text-muted);">-</span>
           <input type="number" name="maxPrice" placeholder="Max" value="<%= activeFilters.maxPrice %>" min="0">
         </div>
-        <button type="submit" class="btn btn-outline btn-sm btn-block">Apply Price</button>
+        <button type="submit" class="btn btn-outline btn-sm btn-block" style="margin-top: 0.5rem;">Apply Price</button>
       </div>
 
       <!-- Brand Filter -->
@@ -130,8 +149,8 @@
             <input 
               type="radio" 
               name="rating" 
-              value="4" 
-              <%= activeFilters.rating === '4' ? 'checked' : '' %>
+              value="4.0" 
+              <%= activeFilters.rating === '4.0' ? 'checked' : '' %>
               onchange="document.getElementById('filterForm').submit()"
             >
             <span>★ 4.0 & up</span>
@@ -148,12 +167,17 @@
 
   <!-- Products Main Content -->
   <section>
-    <!-- Top Bar with sorting -->
+    <!-- Top Bar with sorting & active pills -->
     <div class="shop-top-bar">
-      <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600;">
+      <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <% if (activeFilters.category && activeFilters.category !== 'all') { %>
-          <span style="background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); margin-right: 0.5rem;">
-            <%= activeFilters.category %>
+          <span style="background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm);">
+            Category: <%= activeFilters.category %>
+          </span>
+        <% } %>
+        <% if (activeFilters.inStock === 'true') { %>
+          <span style="background: #dcfce7; color: #15803d; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.8rem;">
+            ✓ In Stock Only
           </span>
         <% } %>
         <span>Showing <%= products.length %> items</span>
@@ -192,7 +216,7 @@
         <nav class="pagination" aria-label="Catalog pagination">
           <% for (let i = 1; i <= totalPages; i++) { %>
             <a 
-              href="/shop?page=<%= i %>&category=<%= activeFilters.category %>&sort=<%= activeFilters.sort %>&minPrice=<%= activeFilters.minPrice %>&maxPrice=<%= activeFilters.maxPrice %>&q=<%= activeFilters.q %>"
+              href="/shop?page=<%= i %>&category=<%= activeFilters.category %>&sort=<%= activeFilters.sort %>&minPrice=<%= activeFilters.minPrice %>&maxPrice=<%= activeFilters.maxPrice %>&q=<%= activeFilters.q %>&inStock=<%= activeFilters.inStock %>"
               class="page-link <%= currentPage === i ? 'active' : '' %>"
             >
               <%= i %>
@@ -206,7 +230,7 @@
         <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
         <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">No products found</h3>
         <p style="color: var(--text-muted); margin-bottom: 1.5rem; max-width: 420px; margin-left: auto; margin-right: auto;">
-          We couldn't find any products matching your active filters or search terms. Try loosening your criteria or resetting your search.
+          We couldn't find any products matching your active filters or search terms. Try unchecking filters or resetting your search.
         </p>
         <a href="/shop" class="btn btn-primary">Browse All Catalog</a>
       </div>

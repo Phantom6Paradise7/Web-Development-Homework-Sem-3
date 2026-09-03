@@ -1,12 +1,27 @@
-<div style="max-width: 440px; margin: 3.5rem auto;">
-  <div class="card" style="padding: 2.5rem 2rem;">
+<div style="max-width: 480px; margin: 3.5rem auto;">
+  <!-- Role Portal Selector Tabs -->
+  <div class="login-role-tabs">
+    <button type="button" class="login-role-tab active" id="tabCustomer" onclick="switchLoginRole('customer')">
+      <span>👤 Customer</span>
+    </button>
+    <button type="button" class="login-role-tab" id="tabAdmin" onclick="switchLoginRole('admin')">
+      <span>⚡ Admin</span>
+    </button>
+    <button type="button" class="login-role-tab" id="tabSupplier" onclick="switchLoginRole('supplier')">
+      <span>🏭 Supplier</span>
+    </button>
+  </div>
+
+  <div class="card" style="padding: 2.5rem 2rem; border-top-left-radius: 0; border-top-right-radius: 0;">
     <div style="text-align: center; margin-bottom: 2rem;">
-      <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛍️</div>
-      <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Welcome Back</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in to your Shopease account</p>
+      <div id="roleBadgeIcon" style="font-size: 2.2rem; margin-bottom: 0.5rem;">🛍️</div>
+      <h1 id="loginHeaderTitle" style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Welcome Back</h1>
+      <p id="loginHeaderDesc" style="color: var(--text-muted); font-size: 0.9rem;">
+        Sign in to your customer account to track orders & save items
+      </p>
     </div>
 
-    <form action="/auth/login" method="POST">
+    <form action="/auth/login" method="POST" id="loginForm">
       <div class="form-group">
         <label class="form-label" for="loginEmail">Email Address</label>
         <input 
@@ -34,43 +49,95 @@
         >
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
-        Sign In to Account
+      <button type="submit" id="loginSubmitBtn" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
+        Sign In as Customer
       </button>
     </form>
 
     <!-- Quick Demo Accounts Filler -->
     <div style="margin-top: 1.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
       <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: center; margin-bottom: 0.75rem;">
-        ⚡ Instant One-Click Demo Logins
+        ⚡ Instant 1-Click Demo Logins
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
         <button 
           type="button" 
           class="btn btn-outline btn-sm" 
-          onclick="fillCredentials('john@example.com', 'customer123')"
+          onclick="fillCredentials('john@example.com', 'customer123', 'customer')"
+          title="Login as Shopper"
         >
           👤 Customer
         </button>
         <button 
           type="button" 
           class="btn btn-outline btn-sm" 
-          onclick="fillCredentials('admin@store.com', 'admin123')"
+          onclick="fillCredentials('admin@store.com', 'admin123', 'admin')"
+          title="Login as Store Administrator"
         >
           ⚡ Admin
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-outline btn-sm" 
+          onclick="fillCredentials('supplier@apex.com', 'supplier123', 'supplier')"
+          title="Login as Verified Supplier"
+        >
+          🏭 Supplier
         </button>
       </div>
     </div>
 
     <div style="text-align: center; margin-top: 1.75rem; font-size: 0.875rem; color: var(--text-secondary);">
-      Don't have an account? <a href="/auth/register" style="color: var(--primary); font-weight: 700;">Create Account</a>
+      Don't have an account? 
+      <a href="/auth/register" id="registerLink" style="color: var(--primary); font-weight: 700;">
+        Create Account
+      </a>
+      • 
+      <a href="/auth/register?role=supplier" style="color: #06b6d4; font-weight: 700;">
+        Become a Supplier
+      </a>
     </div>
   </div>
 </div>
 
 <script>
-function fillCredentials(email, pass) {
+function switchLoginRole(role) {
+  document.querySelectorAll('.login-role-tab').forEach(t => t.classList.remove('active'));
+  
+  const headerTitle = document.getElementById('loginHeaderTitle');
+  const headerDesc = document.getElementById('loginHeaderDesc');
+  const badgeIcon = document.getElementById('roleBadgeIcon');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  
+  if (role === 'customer') {
+    document.getElementById('tabCustomer').classList.add('active');
+    badgeIcon.textContent = '🛍️';
+    headerTitle.textContent = 'Customer Sign In';
+    headerDesc.textContent = 'Access your personal orders, wishlists, and express checkout.';
+    submitBtn.textContent = 'Sign In to Customer Account';
+    submitBtn.style.background = 'var(--primary)';
+  } else if (role === 'admin') {
+    document.getElementById('tabAdmin').classList.add('active');
+    badgeIcon.textContent = '⚡';
+    headerTitle.textContent = 'Administrator Console';
+    headerDesc.textContent = 'Executive access to store analytics, orders, products & category studio.';
+    submitBtn.textContent = 'Sign In to Admin Console';
+    submitBtn.style.background = '#4338ca';
+  } else if (role === 'supplier') {
+    document.getElementById('tabSupplier').classList.add('active');
+    badgeIcon.textContent = '🏭';
+    headerTitle.textContent = 'Supplier & Vendor Portal';
+    headerDesc.textContent = 'Manage your product inventory, stock levels, and supply orders.';
+    submitBtn.textContent = 'Sign In to Supplier Portal';
+    submitBtn.style.background = '#0891b2';
+  }
+}
+
+function fillCredentials(email, pass, role) {
   document.getElementById('loginEmail').value = email;
   document.getElementById('loginPassword').value = pass;
+  if (role) {
+    switchLoginRole(role);
+  }
 }
 </script>

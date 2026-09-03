@@ -26,8 +26,20 @@ const ensureAdmin = (req, res, next) => {
   });
 };
 
+// Middleware to protect supplier routes (accessible by suppliers and admins)
+const ensureSupplier = (req, res, next) => {
+  if (req.session && req.session.user && (req.session.user.role === 'supplier' || req.session.user.role === 'admin')) {
+    return next();
+  }
+  return res.status(403).render('pages/403', {
+    title: 'Access Denied',
+    message: 'You need an authorized Supplier or Admin account to access this portal.'
+  });
+};
+
 module.exports = {
   ensureAuth,
   ensureGuest,
-  ensureAdmin
+  ensureAdmin,
+  ensureSupplier
 };

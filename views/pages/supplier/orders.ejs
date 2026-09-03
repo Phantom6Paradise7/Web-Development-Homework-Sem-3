@@ -1,0 +1,86 @@
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #0891b2;">Supplier Fulfillment Hub</span>
+    </div>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Supplier Orders & Dispatch</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Orders containing items supplied by <%= supplierName %>.
+    </p>
+  </div>
+  <div>
+    <a href="/supplier" class="btn btn-outline btn-sm">&larr; Dashboard</a>
+  </div>
+</div>
+
+<% if (orders && orders.length > 0) { %>
+  <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3rem;">
+    <% orders.forEach(order => { %>
+      <div class="card" style="padding: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Order Number</span>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #0891b2;"><%= order.orderNumber %></div>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date Placed</span>
+            <div style="font-size: 0.95rem; font-weight: 600;">
+              <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier Revenue</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #15803d;">
+              $<%= order.supplierSubtotal.toFixed(2) %>
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Fulfillment Status</span>
+            <div>
+              <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); background: <%= order.orderStatus === 'delivered' ? '#dcfce7' : (order.orderStatus === 'shipped' ? '#eff6ff' : '#fef3c7') %>; color: <%= order.orderStatus === 'delivered' ? '#15803d' : (order.orderStatus === 'shipped' ? '#1d4ed8' : '#b45309') %>;">
+                <%= order.orderStatus %>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supplier's Items in this order -->
+        <div style="margin-bottom: 1rem;">
+          <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem;">Your Products in this Order</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <% order.supplierItems.forEach(item => { %>
+              <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 0.75rem 1rem; border-radius: var(--radius-md);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 42px; height: 42px; border-radius: var(--radius-sm); object-fit: cover;">
+                  <div>
+                    <strong style="font-size: 0.95rem; color: var(--text-primary);"><%= item.name %></strong>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Quantity: <%= item.quantity %> unit(s) • Unit Price: $<%= item.price.toFixed(2) %></div>
+                  </div>
+                </div>
+                <div style="font-size: 1rem; font-weight: 700;">
+                  $<%= (item.price * item.quantity).toFixed(2) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Destination Address Details -->
+        <div style="font-size: 0.85rem; color: var(--text-secondary); background: #f1f5f9; padding: 0.75rem 1rem; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <strong>Ship to:</strong> <%= order.shippingAddress.fullName %> • <%= order.shippingAddress.street %>, <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.postalCode %>
+          </div>
+          <div>
+            <strong>Payment:</strong> <%= order.paymentMethod.toUpperCase() %> (<%= order.paymentStatus.toUpperCase() %>)
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="card" style="padding: 4rem 2rem; text-align: center; margin-bottom: 3rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No fulfillment orders found</h3>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">When customers purchase your listed items, order fulfillment details will appear here.</p>
+  </div>
+<% } %>

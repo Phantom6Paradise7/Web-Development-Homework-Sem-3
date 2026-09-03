@@ -8,5 +8,6 @@ router.get('/shop', productController.getShop);
 router.get('/product/:slug', productController.getProductBySlug);
 router.post('/product/:id/reviews', ensureAuth, productController.addReview);
 router.get('/api/search', productController.apiLiveSearch);
+router.get('/api/products/:id/quickview', productController.apiQuickView);
 
 module.exports = router;

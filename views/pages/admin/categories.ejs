@@ -1,0 +1,187 @@
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--primary);">Catalog Architecture</span>
+      <span style="font-size: 0.75rem; background: var(--bg-muted); color: var(--text-secondary); padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-weight: 600;">
+        <%= categories.length %> Active Categories
+      </span>
+    </div>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Category Studio</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Create, curate, and customize product categories with HD visual imagery and icons.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <button type="button" class="btn btn-primary" onclick="toggleAddCategoryForm()">
+      + Add New Category
+    </button>
+    <a href="/admin/products" class="btn btn-outline">
+      📦 Inventory List
+    </a>
+  </div>
+</div>
+
+<!-- Add Category Inline Form Card (Expandable) -->
+<div class="card" id="addCategoryCard" style="display: none; padding: 2rem; margin-bottom: 2.5rem; border: 2px solid var(--primary-light);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 800;">Add New Department / Category</h3>
+    <button type="button" class="btn btn-outline btn-sm" onclick="toggleAddCategoryForm()">✕ Close</button>
+  </div>
+
+  <form action="/admin/categories/new" method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="catName">Category Name *</label>
+        <input type="text" name="name" id="catName" class="form-control" required placeholder="e.g. Smart Watches & Wearables">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="catIcon">Icon / Emoji (Displayed in Navigation)</label>
+        <input type="text" name="icon" id="catIcon" class="form-control" placeholder="e.g. ⌚ or 🎧 or tag" value="🏷️">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="catImage">Category Thumbnail Image URL *</label>
+        <input type="url" name="image" id="catImage" class="form-control" required placeholder="https://images.unsplash.com/photo-...">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">High-resolution Unsplash or CDN square/landscape photo link</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="catBanner">Header Banner Image URL (Optional)</label>
+        <input type="url" name="bannerImage" id="catBanner" class="form-control" placeholder="https://images.unsplash.com/photo-...">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="catDesc">Description</label>
+      <textarea name="description" id="catDesc" rows="2" class="form-control" placeholder="A brief curated summary of products found in this category..."></textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+      <button type="button" class="btn btn-outline" onclick="toggleAddCategoryForm()">Cancel</button>
+      <button type="submit" class="btn btn-primary">Create Category</button>
+    </div>
+  </form>
+</div>
+
+<!-- Categories Visual Cards Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+  <% if (categories && categories.length > 0) { %>
+    <% categories.forEach(cat => { %>
+      <div class="card" style="overflow: hidden; display: flex; flex-direction: column;">
+        <!-- Category Banner / Image Preview -->
+        <div style="height: 160px; position: relative; overflow: hidden; background: var(--secondary);">
+          <% if (cat.image) { %>
+            <img src="<%= cat.image %>" alt="<%= cat.name %>" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+          <% } else { %>
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: #e0e7ff;">
+              <%= cat.icon || '🏷️' %>
+            </div>
+          <% } %>
+          <div style="position: absolute; top: 1rem; left: 1rem; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); color: #fff; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+            <span><%= cat.icon || '🏷️' %></span>
+            <span><%= cat.name %></span>
+          </div>
+
+          <div style="position: absolute; bottom: 0.75rem; right: 0.75rem; background: #fff; color: var(--text-primary); font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+            <%= cat.productCount || 0 %> Products
+          </div>
+        </div>
+
+        <!-- Category Details -->
+        <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);"><%= cat.name %></h3>
+              <span style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">/shop?category=<%= cat.slug %></span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+              <%= cat.description || 'No description provided for this category.' %>
+            </p>
+          </div>
+
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/shop?category=<%= encodeURIComponent(cat.name) %>" target="_blank" style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">
+              View Storefront &rarr;
+            </a>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button 
+                type="button" 
+                class="btn btn-outline btn-sm" 
+                onclick="openEditCategoryModal('<%= cat._id %>', '<%= cat.name.replace(/'/g, '\\\'') %>', '<%= (cat.description || '').replace(/'/g, '\\\'') %>', '<%= cat.icon %>', '<%= cat.image %>')"
+              >
+                Edit
+              </button>
+              <form action="/admin/categories/<%= cat._id %>/delete" method="POST" onsubmit="return confirm('Delete this category? Any items under this category will remain in the catalog.');">
+                <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--border-subtle);">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<!-- Edit Category Modal Dialog -->
+<dialog id="editCategoryModal" style="border: none; border-radius: var(--radius-lg); padding: 0; box-shadow: var(--shadow-xl); max-width: 540px; width: 90%; margin: auto;">
+  <div style="padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800;">Edit Category</h3>
+      <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('editCategoryModal').close()">✕</button>
+    </div>
+
+    <form id="editCategoryForm" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="editCatName">Category Name *</label>
+        <input type="text" name="name" id="editCatName" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="editCatIcon">Icon / Emoji</label>
+        <input type="text" name="icon" id="editCatIcon" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="editCatImage">Image URL *</label>
+        <input type="url" name="image" id="editCatImage" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="editCatDesc">Description</label>
+        <textarea name="description" id="editCatDesc" rows="3" class="form-control"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('editCategoryModal').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+function toggleAddCategoryForm() {
+  const card = document.getElementById('addCategoryCard');
+  if (card.style.display === 'none') {
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function openEditCategoryModal(id, name, desc, icon, image) {
+  const modal = document.getElementById('editCategoryModal');
+  const form = document.getElementById('editCategoryForm');
+  form.action = `/admin/categories/${id}/edit`;
+  document.getElementById('editCatName').value = name;
+  document.getElementById('editCatDesc').value = desc;
+  document.getElementById('editCatIcon').value = icon;
+  document.getElementById('editCatImage').value = image;
+  modal.showModal();
+}
+</script>

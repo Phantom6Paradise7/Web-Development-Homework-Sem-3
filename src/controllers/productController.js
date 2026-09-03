@@ -28,7 +28,7 @@ exports.getShop = async (req, res, next) => {
     const limit = 12;
     const skip = (page - 1) * limit;
 
-    const { q, category, brand, minPrice, maxPrice, sort, rating } = req.query;
+    const { q, category, brand, minPrice, maxPrice, sort, rating, inStock } = req.query;
 
     let filter = {};
 
@@ -49,6 +49,11 @@ exports.getShop = async (req, res, next) => {
     // Brand filter
     if (brand && brand !== 'all') {
       filter.brand = brand;
+    }
+
+    // In Stock Only filter
+    if (inStock === 'true' || inStock === '1') {
+      filter.stock = { $gt: 0 };
     }
 
     // Rating filter
@@ -98,7 +103,8 @@ exports.getShop = async (req, res, next) => {
         minPrice: minPrice || '',
         maxPrice: maxPrice || '',
         sort: sort || 'newest',
-        rating: rating || ''
+        rating: rating || '',
+        inStock: inStock || ''
       }
     });
   } catch (error) {
@@ -200,5 +206,41 @@ exports.apiLiveSearch = async (req, res) => {
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// JSON API endpoint for Product Quick View Modal
+exports.apiQuickView = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).lean();
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json({
+      success: true,
+      product: {
+        _id: product._id,
+        name: product.name,
+        slug: product.slug,
+        brand: product.brand,
+        category: product.category,
+        supplierName: product.supplierName || 'Shopease Official',
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discountPercent: product.discountPercent,
+        stock: product.stock,
+        thumbnail: product.thumbnail,
+        images: product.images && product.images.length > 0 ? product.images : [product.thumbnail],
+        description: product.description,
+        features: product.features || [],
+        specs: product.specs || [],
+        ratings: product.ratings || 5,
+        numReviews: product.numReviews || 0,
+        badge: product.badge || ''
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

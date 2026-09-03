@@ -1,14 +1,54 @@
-<div style="max-width: 460px; margin: 3.5rem auto;">
+<div style="max-width: 520px; margin: 3rem auto;">
   <div class="card" style="padding: 2.5rem 2rem;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛍️</div>
+    <div style="text-align: center; margin-bottom: 1.75rem;">
+      <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🛍️</div>
       <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Create Your Account</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Join Shopease for personalized shopping & expedited checkout</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Join Shopease as a customer or register as a certified supplier partner</p>
     </div>
 
-    <form action="/auth/register" method="POST">
+    <form action="/auth/register" method="POST" id="regForm">
+      <!-- Role Selection Toggle -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label class="form-label" style="font-weight: 700;">Account Type</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <label style="cursor: pointer;">
+            <input 
+              type="radio" 
+              name="role" 
+              value="customer" 
+              id="roleCustomerRadio"
+              style="display: none;" 
+              <%= typeof selectedRole === 'undefined' || selectedRole === 'customer' ? 'checked' : '' %>
+              onchange="toggleSupplierFields()"
+            >
+            <div class="role-select-box active" id="customerBox" style="padding: 0.85rem; border: 2px solid var(--border-subtle); border-radius: var(--radius-md); text-align: center;">
+              <div style="font-size: 1.25rem; margin-bottom: 0.2rem;">👤</div>
+              <strong style="font-size: 0.9rem; display: block;">Customer</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">For personal shopping</span>
+            </div>
+          </label>
+
+          <label style="cursor: pointer;">
+            <input 
+              type="radio" 
+              name="role" 
+              value="supplier" 
+              id="roleSupplierRadio"
+              style="display: none;" 
+              <%= typeof selectedRole !== 'undefined' && selectedRole === 'supplier' ? 'checked' : '' %>
+              onchange="toggleSupplierFields()"
+            >
+            <div class="role-select-box" id="supplierBox" style="padding: 0.85rem; border: 2px solid var(--border-subtle); border-radius: var(--radius-md); text-align: center;">
+              <div style="font-size: 1.25rem; margin-bottom: 0.2rem;">🏭</div>
+              <strong style="font-size: 0.9rem; display: block;">Supplier Partner</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Manage & sell inventory</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label class="form-label" for="regName">Full Name</label>
+        <label class="form-label" for="regName">Full Name *</label>
         <input 
           type="text" 
           name="name" 
@@ -20,8 +60,37 @@
         >
       </div>
 
+      <!-- Supplier Specific Fields (Conditional) -->
+      <div id="supplierFieldsContainer" style="display: none; background: #f8fafc; border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #0891b2; text-transform: uppercase; margin-bottom: 0.75rem;">
+          🏭 Supplier Business Profile
+        </div>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label class="form-label" for="regCompany">Company / Brand Store Name *</label>
+          <input 
+            type="text" 
+            name="companyName" 
+            id="regCompany" 
+            class="form-control" 
+            placeholder="e.g. Apex Hardware Supplies LLC"
+            value="<%= typeof companyName !== 'undefined' ? companyName : '' %>"
+          >
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="regPhone">Business Contact Phone *</label>
+          <input 
+            type="tel" 
+            name="phone" 
+            id="regPhone" 
+            class="form-control" 
+            placeholder="+1 (555) 019-2834"
+            value="<%= typeof phone !== 'undefined' ? phone : '' %>"
+          >
+        </div>
+      </div>
+
       <div class="form-group">
-        <label class="form-label" for="regEmail">Email Address</label>
+        <label class="form-label" for="regEmail">Email Address *</label>
         <input 
           type="email" 
           name="email" 
@@ -34,7 +103,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regPass">Password</label>
+        <label class="form-label" for="regPass">Password *</label>
         <input 
           type="password" 
           name="password" 
@@ -47,7 +116,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regPassConfirm">Confirm Password</label>
+        <label class="form-label" for="regPassConfirm">Confirm Password *</label>
         <input 
           type="password" 
           name="confirmPassword" 
@@ -59,8 +128,8 @@
         >
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
-        Register Account
+      <button type="submit" id="regSubmitBtn" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
+        Register as Customer
       </button>
     </form>
 
@@ -69,3 +138,38 @@
     </div>
   </div>
 </div>
+
+<script>
+function toggleSupplierFields() {
+  const isSupplier = document.getElementById('roleSupplierRadio').checked;
+  const container = document.getElementById('supplierFieldsContainer');
+  const custBox = document.getElementById('customerBox');
+  const suppBox = document.getElementById('supplierBox');
+  const submitBtn = document.getElementById('regSubmitBtn');
+  const companyInput = document.getElementById('regCompany');
+
+  if (isSupplier) {
+    container.style.display = 'block';
+    suppBox.style.borderColor = 'var(--primary)';
+    suppBox.style.background = 'var(--primary-light)';
+    custBox.style.borderColor = 'var(--border-subtle)';
+    custBox.style.background = 'transparent';
+    submitBtn.textContent = 'Register Supplier Partner Account';
+    submitBtn.style.background = '#0891b2';
+    companyInput.required = true;
+  } else {
+    container.style.display = 'none';
+    custBox.style.borderColor = 'var(--primary)';
+    custBox.style.background = 'var(--primary-light)';
+    suppBox.style.borderColor = 'var(--border-subtle)';
+    suppBox.style.background = 'transparent';
+    submitBtn.textContent = 'Register Customer Account';
+    submitBtn.style.background = 'var(--primary)';
+    companyInput.required = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  toggleSupplierFields();
+});
+</script>

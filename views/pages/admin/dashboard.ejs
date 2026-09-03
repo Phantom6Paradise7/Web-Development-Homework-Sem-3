@@ -1,52 +1,65 @@
-<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
   <div>
     <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--primary);">Merchant Command Center</span>
     <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Store Overview & Analytics</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Monitor revenue, catalog inventory, supplier partners, and customer fulfillment.</p>
   </div>
-  <div style="display: flex; gap: 0.75rem;">
-    <a href="/admin/products/new" class="btn btn-primary btn-sm">+ Add New Product</a>
-    <a href="/admin/orders" class="btn btn-outline btn-sm">Manage Orders</a>
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="/admin/products/new" class="btn btn-primary btn-sm">+ Add Product</a>
+    <a href="/admin/categories" class="btn btn-outline btn-sm">🏷️ Category Studio</a>
+    <a href="/admin/suppliers" class="btn btn-outline btn-sm">🤝 Suppliers</a>
+    <a href="/admin/orders" class="btn btn-outline btn-sm">🚚 Orders</a>
   </div>
 </div>
 
-<!-- Key Performance Metrics Grid -->
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+<!-- Key Performance Metrics Grid (5 Columns) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
   <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--primary);">
-    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Revenue</div>
-    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$<%= totalRevenue %></div>
-    <div style="font-size: 0.75rem; color: #16a34a; margin-top: 0.25rem;">● Realized Gross Sales</div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Gross Sales</div>
+    <div style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$<%= totalRevenue %></div>
+    <div style="font-size: 0.75rem; color: #16a34a; margin-top: 0.25rem;">● Realized Revenue</div>
   </div>
 
   <div class="card" style="padding: 1.5rem; border-left: 4px solid #06b6d4;">
-    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Orders</div>
-    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalOrders %></div>
-    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">All lifetime orders</div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Orders Processed</div>
+    <div style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalOrders %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><a href="/admin/orders" style="color: #06b6d4; font-weight: 600;">View Orders &rarr;</a></div>
   </div>
 
   <div class="card" style="padding: 1.5rem; border-left: 4px solid #10b981;">
-    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Active Catalog Items</div>
-    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalProducts %></div>
-    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><a href="/admin/products" style="color: var(--primary); font-weight: 600;">View Catalog &rarr;</a></div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Catalog Items</div>
+    <div style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalProducts %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><a href="/admin/products" style="color: var(--primary); font-weight: 600;">Manage Stock &rarr;</a></div>
   </div>
 
   <div class="card" style="padding: 1.5rem; border-left: 4px solid #f59e0b;">
-    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Registered Customers</div>
-    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalCustomers %></div>
-    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Verified buyer profiles</div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Shoppers</div>
+    <div style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalCustomers %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Verified customer profiles</div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; border-left: 4px solid #8b5cf6;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Vendor Partners</div>
+    <div style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= typeof totalSuppliers !== 'undefined' ? totalSuppliers : 1 %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><a href="/admin/suppliers" style="color: #8b5cf6; font-weight: 600;">Partner Network &rarr;</a></div>
   </div>
 </div>
 
 <!-- Low Stock Warnings & Alerts -->
 <% if (lowStockProducts && lowStockProducts.length > 0) { %>
-  <div class="alert alert-error" style="margin-bottom: 2rem;">
-    <div style="font-size: 1.3rem;">⚠️</div>
-    <div>
-      <strong>Inventory Replenishment Alert:</strong> <%= lowStockProducts.length %> products are currently at or below 5 units:
-      <span style="font-weight: 600;">
-        <%= lowStockProducts.map(p => `${p.name} (${p.stock} left)`).join(', ') %>
-      </span>
-      — <a href="/admin/products" style="text-decoration: underline; font-weight: 700;">Update Stock</a>
+  <div class="alert alert-error" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="font-size: 1.4rem;">⚠️</div>
+      <div>
+        <strong>Inventory Replenishment Alert:</strong> <%= lowStockProducts.length %> items are running critically low in stock:
+        <span style="font-weight: 700;">
+          <%= lowStockProducts.map(p => `${p.name} (${p.stock} remaining)`).join(', ') %>
+        </span>
+      </div>
     </div>
+    <a href="/admin/products" class="btn btn-outline btn-sm" style="background: #fff; white-space: nowrap;">
+      + Restock Now
+    </a>
   </div>
 <% } %>
 

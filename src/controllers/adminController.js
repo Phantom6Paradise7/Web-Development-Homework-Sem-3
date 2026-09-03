@@ -9,6 +9,7 @@ exports.getDashboard = async (req, res, next) => {
     const totalOrders = await Order.countDocuments();
     const totalProducts = await Product.countDocuments();
     const totalCustomers = await User.countDocuments({ role: 'customer' });
+    const totalSuppliers = await User.countDocuments({ role: 'supplier' });
 
     // Aggregate total revenue
     const revenueData = await Order.aggregate([
@@ -32,6 +33,7 @@ exports.getDashboard = async (req, res, next) => {
       totalOrders,
       totalProducts,
       totalCustomers,
+      totalSuppliers,
       totalRevenue: totalRevenue.toFixed(2),
       recentOrders,
       lowStockProducts
@@ -246,6 +248,196 @@ exports.updateOrderStatus = async (req, res, next) => {
 
     await order.save();
     res.redirect(`/admin/orders?success=Order #${order.orderNumber} updated to ${orderStatus}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Quick Stock Adjuster for Admin (AJAX or Form POST)
+// Allows stock add (+1, +5, +10), stock remove (-1, -5, -10), or set exact stock
+exports.adjustStock = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { action, amount, stock } = req.body;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(404).json({ success: false, message: 'Product not found' });
+      }
+      return res.redirect('/admin/products?error=Product not found');
+    }
+
+    const step = parseInt(amount) || 1;
+    let oldStock = product.stock;
+
+    if (action === 'add' || action === 'increment') {
+      product.stock += step;
+    } else if (action === 'remove' || action === 'decrement') {
+      product.stock = Math.max(0, product.stock - step);
+    } else if (action === 'set' || stock !== undefined) {
+      product.stock = Math.max(0, parseInt(stock) || 0);
+    }
+
+    await product.save();
+
+    const change = product.stock - oldStock;
+    const message = change >= 0
+      ? `Added ${change} units to "${product.name}". Current stock: ${product.stock}`
+      : `Removed ${Math.abs(change)} units from "${product.name}". Current stock: ${product.stock}`;
+
+    if (req.xhr || req.headers.accept?.includes('application/json')) {
+      return res.json({
+        success: true,
+        productId: product._id,
+        newStock: product.stock,
+        oldStock,
+        change,
+        message
+      });
+    }
+
+    res.redirect(`/admin/products?success=${encodeURIComponent(message)}`);
+  } catch (error) {
+    if (req.xhr || req.headers.accept?.includes('application/json')) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+// Admin Category Studio: List all categories with product counts
+exports.getCategories = async (req, res, next) => {
+  try {
+    const categories = await Category.find().sort({ createdAt: -1 }).lean();
+
+    // Attach item counts dynamically
+    const categoriesWithCounts = await Promise.all(
+      categories.map(async cat => {
+        const count = await Product.countDocuments({
+          category: { $regex: new RegExp(`^${cat.name}$`, 'i') }
+        });
+        return {
+          ...cat,
+          productCount: count
+        };
+      })
+    );
+
+    res.render('pages/admin/categories', {
+      title: 'Category Studio - Shopease Admin',
+      categories: categoriesWithCounts
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Handle Create Category POST
+exports.postCreateCategory = async (req, res, next) => {
+  try {
+    const { name, description, icon, image, bannerImage } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.redirect('/admin/categories?error=Category name is required');
+    }
+
+    const slug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    const existing = await Category.findOne({ slug });
+    if (existing) {
+      return res.redirect('/admin/categories?error=Category with this name or slug already exists');
+    }
+
+    const category = new Category({
+      name: name.trim(),
+      slug,
+      description: description || '',
+      icon: icon || 'tag',
+      image: image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+      bannerImage: bannerImage || image || '',
+      isFeatured: true
+    });
+
+    await category.save();
+    res.redirect('/admin/categories?success=Category created successfully!');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Handle Edit Category POST
+exports.postEditCategory = async (req, res, next) => {
+  try {
+    const { name, description, icon, image, bannerImage } = req.body;
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.redirect('/admin/categories?error=Category not found');
+    }
+
+    const oldName = category.name;
+    category.name = name.trim();
+    category.slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    category.description = description || '';
+    category.icon = icon || category.icon;
+    category.image = image || category.image;
+    category.bannerImage = bannerImage || category.bannerImage;
+
+    await category.save();
+
+    // If name changed, update products using this category
+    if (oldName !== category.name) {
+      await Product.updateMany({ category: oldName }, { category: category.name });
+    }
+
+    res.redirect('/admin/categories?success=Category updated successfully!');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Category
+exports.deleteCategory = async (req, res, next) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.redirect('/admin/categories?error=Category not found');
+    }
+
+    await Category.findByIdAndDelete(req.params.id);
+    res.redirect(`/admin/categories?success=Category "${category.name}" removed`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin Suppliers Directory
+exports.getSuppliers = async (req, res, next) => {
+  try {
+    const suppliers = await User.find({ role: 'supplier' }).sort({ createdAt: -1 }).lean();
+
+    const suppliersWithData = await Promise.all(
+      suppliers.map(async s => {
+        const productsCount = await Product.countDocuments({ supplier: s._id });
+        const products = await Product.find({ supplier: s._id }).select('stock price').lean();
+        const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+        return {
+          ...s,
+          productsCount,
+          totalStock
+        };
+      })
+    );
+
+    res.render('pages/admin/suppliers', {
+      title: 'Supplier & Partner Network - Shopease Admin',
+      suppliers: suppliersWithData
+    });
   } catch (error) {
     next(error);
   }

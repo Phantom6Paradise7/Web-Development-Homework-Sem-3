@@ -55,6 +55,14 @@ const productSchema = new mongoose.Schema(
       required: [true, 'Please select a category'],
       trim: true
     },
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    supplierName: {
+      type: String,
+      default: 'Shopease Official'
+    },
     description: {
       type: String,
       required: [true, 'Please enter product description']

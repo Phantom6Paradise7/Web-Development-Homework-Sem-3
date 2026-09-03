@@ -27,7 +27,13 @@
 
   <!-- Right Column: Details & Actions -->
   <div>
-    <div class="detail-brand-badge"><%= product.brand %> • <%= product.category %></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+      <div class="detail-brand-badge"><%= product.brand %> • <%= product.category %></div>
+      <div class="seller-pill" title="Verified Supply Partner">
+        🏭 Sold by: <strong><%= product.supplierName || 'Shopease Official' %></strong>
+      </div>
+    </div>
+
     <h1 class="detail-title"><%= product.name %></h1>
 
     <!-- Rating & Stock summary -->
@@ -37,14 +43,47 @@
         <span class="count" style="font-size: 0.875rem;">(<%= product.numReviews || 0 %> verified reviews)</span>
       </div>
 
-      <% if (product.stock > 10) { %>
-        <span class="stock-indicator stock-in">● In Stock (<%= product.stock %> units)</span>
-      <% } else if (product.stock > 0) { %>
-        <span class="stock-indicator stock-low">⚠️ Low Stock (Only <%= product.stock %> remaining)</span>
-      <% } else { %>
-        <span class="stock-indicator stock-out">✕ Out of Stock</span>
-      <% } %>
+      <div id="stock-badge-<%= product._id %>">
+        <% if (product.stock > 10) { %>
+          <span class="stock-indicator stock-in">● In Stock (<span class="stock-num"><%= product.stock %></span> units available)</span>
+        <% } else if (product.stock > 0) { %>
+          <span class="stock-indicator stock-low">⚠️ Only <span class="stock-num"><%= product.stock %></span> remaining - order soon!</span>
+        <% } else { %>
+          <span class="stock-indicator stock-out">✕ Sold Out / Out of Stock</span>
+        <% } %>
+      </div>
     </div>
+
+    <!-- Manager / Supplier On-Page Stock Adjuster (Visible to Admin or product's Supplier) -->
+    <% if (currentUser && (currentUser.role === 'admin' || (currentUser.role === 'supplier' && product.supplier && product.supplier.toString() === currentUser._id.toString()))) { %>
+      <div class="onpage-manager-card" style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+          <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; color: #15803d; text-transform: uppercase;">
+            <span>⚡ Inventory Controls (<%= currentUser.role === 'admin' ? 'Admin' : 'Supplier' %>)</span>
+          </div>
+          <span style="font-size: 0.75rem; color: #166534;">Live Stock: <strong id="liveStockDisplay"><%= product.stock %></strong> units</span>
+        </div>
+
+        <div class="stock-action-widget" data-product-id="<%= product._id %>" data-endpoint="<%= currentUser.role === 'admin' ? '/admin/products/' + product._id + '/stock' : '/supplier/products/' + product._id + '/stock' %>">
+          <div class="stock-btn-group remove-group">
+            <button type="button" class="btn-stock-adjust minus" data-action="remove" data-amount="1" title="Remove 1 unit">-1</button>
+            <button type="button" class="btn-stock-adjust minus" data-action="remove" data-amount="5" title="Remove 5 units">-5</button>
+            <button type="button" class="btn-stock-adjust minus" data-action="remove" data-amount="10" title="Remove 10 units">-10</button>
+          </div>
+
+          <div class="stock-input-wrapper">
+            <input type="number" class="stock-direct-input" min="0" value="<%= product.stock %>" id="input-stock-<%= product._id %>">
+            <button type="button" class="btn-stock-set" data-action="set" title="Set exact stock count">Set</button>
+          </div>
+
+          <div class="stock-btn-group add-group">
+            <button type="button" class="btn-stock-adjust plus" data-action="add" data-amount="1" title="Add 1 unit">+1</button>
+            <button type="button" class="btn-stock-adjust plus" data-action="add" data-amount="5" title="Add 5 units">+5</button>
+            <button type="button" class="btn-stock-adjust plus" data-action="add" data-amount="10" title="Add 10 units">+10</button>
+          </div>
+        </div>
+      </div>
+    <% } %>
 
     <!-- Pricing Box -->
     <div class="detail-price-box">

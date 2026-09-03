@@ -26,6 +26,18 @@ const categorySchema = new mongoose.Schema(
     image: {
       type: String,
       default: ''
+    },
+    bannerImage: {
+      type: String,
+      default: ''
+    },
+    itemCount: {
+      type: Number,
+      default: 0
+    },
+    isFeatured: {
+      type: Boolean,
+      default: true
     }
   },
   {

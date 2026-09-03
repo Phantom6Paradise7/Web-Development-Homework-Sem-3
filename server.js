@@ -17,6 +17,7 @@ const cartRoutes = require('./src/routes/cartRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const supplierRoutes = require('./src/routes/supplierRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -74,6 +75,7 @@ app.use('/', cartRoutes);
 app.use('/', orderRoutes);
 app.use('/', authRoutes);
 app.use('/', adminRoutes);
+app.use('/', supplierRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

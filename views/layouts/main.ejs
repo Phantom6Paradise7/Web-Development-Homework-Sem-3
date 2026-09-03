@@ -25,6 +25,16 @@
   <!-- Global Footer -->
   <%- include('../partials/footer') %>
 
+  <!-- Interactive Product Quick View Modal -->
+  <dialog id="quickViewModal" class="quick-view-modal">
+    <div class="quick-view-dialog-content">
+      <button type="button" class="quick-view-close-btn" id="closeQuickViewBtn" aria-label="Close modal">✕</button>
+      <div id="quickViewModalBody">
+        <!-- Loaded dynamically via fetch /api/products/:id/quickview -->
+      </div>
+    </div>
+  </dialog>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 

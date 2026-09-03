@@ -44,10 +44,18 @@ exports.postLogin = async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      supplierInfo: user.supplierInfo || {}
     };
 
-    const returnUrl = req.session.returnTo || (user.role === 'admin' ? '/admin' : '/');
+    let defaultRedirect = '/';
+    if (user.role === 'admin') {
+      defaultRedirect = '/admin';
+    } else if (user.role === 'supplier') {
+      defaultRedirect = '/supplier';
+    }
+
+    const returnUrl = req.session.returnTo || defaultRedirect;
     delete req.session.returnTo;
     res.redirect(returnUrl);
   } catch (error) {
@@ -57,22 +65,29 @@ exports.postLogin = async (req, res, next) => {
 
 // Render Register Page
 exports.getRegister = (req, res) => {
+  const selectedRole = req.query.role || 'customer';
   res.render('pages/auth/register', {
-    title: 'Create Account - Shopease'
+    title: 'Create Account - Shopease',
+    selectedRole
   });
 };
 
 // Handle Register POST
 exports.postRegister = async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword, role = 'customer', companyName, phone } = req.body;
+
+    const validatedRole = ['customer', 'supplier'].includes(role) ? role : 'customer';
 
     if (!name || !email || !password) {
       return res.render('pages/auth/register', {
         title: 'Create Account - Shopease',
         errorMsg: 'Please fill in all required fields',
         name,
-        email
+        email,
+        selectedRole: validatedRole,
+        companyName,
+        phone
       });
     }
 
@@ -81,7 +96,10 @@ exports.postRegister = async (req, res, next) => {
         title: 'Create Account - Shopease',
         errorMsg: 'Passwords do not match',
         name,
-        email
+        email,
+        selectedRole: validatedRole,
+        companyName,
+        phone
       });
     }
 
@@ -90,7 +108,10 @@ exports.postRegister = async (req, res, next) => {
         title: 'Create Account - Shopease',
         errorMsg: 'Password must be at least 6 characters long',
         name,
-        email
+        email,
+        selectedRole: validatedRole,
+        companyName,
+        phone
       });
     }
 
@@ -100,16 +121,31 @@ exports.postRegister = async (req, res, next) => {
         title: 'Create Account - Shopease',
         errorMsg: 'An account with this email already exists',
         name,
-        email
+        email,
+        selectedRole: validatedRole,
+        companyName,
+        phone
       });
     }
 
-    const user = new User({
+    const userData = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      password
-    });
+      password,
+      role: validatedRole,
+      phone: phone || ''
+    };
 
+    if (validatedRole === 'supplier') {
+      userData.supplierInfo = {
+        companyName: companyName || name.trim() + ' Supplies',
+        storeName: companyName || name.trim() + ' Store',
+        phone: phone || '',
+        isVerified: true
+      };
+    }
+
+    const user = new User(userData);
     await user.save();
 
     // Auto login
@@ -117,10 +153,15 @@ exports.postRegister = async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      supplierInfo: user.supplierInfo || {}
     };
 
-    res.redirect('/?success=Welcome to Shopease, ' + encodeURIComponent(user.name) + '!');
+    if (user.role === 'supplier') {
+      res.redirect('/supplier?success=Welcome to your Supplier Portal, ' + encodeURIComponent(user.name) + '!');
+    } else {
+      res.redirect('/?success=Welcome to Shopease, ' + encodeURIComponent(user.name) + '!');
+    }
   } catch (error) {
     next(error);
   }

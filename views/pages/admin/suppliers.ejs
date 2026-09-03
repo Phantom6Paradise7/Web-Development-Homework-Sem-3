@@ -1,0 +1,78 @@
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--primary);">Merchant Network</span>
+      <span style="font-size: 0.75rem; background: var(--bg-muted); color: var(--text-secondary); padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-weight: 600;">
+        <%= suppliers.length %> Registered Vendors
+      </span>
+    </div>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Supplier & Vendor Partners</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Review supplier partners authorized to list catalog inventory and supply orders on Shopease.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/admin/products" class="btn btn-outline">📦 View All Products</a>
+    <a href="/admin" class="btn btn-primary">Executive Dashboard</a>
+  </div>
+</div>
+
+<div class="card" style="padding: 1.5rem; overflow-x: auto; margin-bottom: 3rem;">
+  <% if (suppliers && suppliers.length > 0) { %>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 1.5px solid var(--border-subtle); text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+          <th style="padding: 0.75rem 0.5rem;">Vendor / Company</th>
+          <th style="padding: 0.75rem 0.5rem;">Contact & Email</th>
+          <th style="padding: 0.75rem 0.5rem;">Listed SKUs</th>
+          <th style="padding: 0.75rem 0.5rem;">Total Warehouse Units</th>
+          <th style="padding: 0.75rem 0.5rem;">Verification Status</th>
+          <th style="padding: 0.75rem 0.5rem; text-align: right;">Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% suppliers.forEach(s => { %>
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: 1rem 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                  🏭
+                </div>
+                <div>
+                  <strong style="font-size: 0.95rem; color: var(--text-primary);">
+                    <%= s.supplierInfo?.companyName || s.name %>
+                  </strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">
+                    Contact Rep: <%= s.name %>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td style="padding: 1rem 0.5rem;">
+              <div style="font-weight: 600;"><%= s.email %></div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);"><%= s.supplierInfo?.phone || s.phone || 'No phone' %></div>
+            </td>
+            <td style="padding: 1rem 0.5rem; font-weight: 700;">
+              <%= s.productsCount %> items
+            </td>
+            <td style="padding: 1rem 0.5rem;">
+              <span style="font-weight: 700; color: #0891b2; background: #e0f2fe; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.8rem;">
+                <%= s.totalStock %> units
+              </span>
+            </td>
+            <td style="padding: 1rem 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; background: #dcfce7; color: #15803d; padding: 0.2rem 0.55rem; border-radius: var(--radius-sm);">
+                ✓ Verified Partner
+              </span>
+            </td>
+            <td style="padding: 1rem 0.5rem; text-align: right; color: var(--text-muted);">
+              <%= new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="text-align: center; padding: 3rem; color: var(--text-muted);">No supplier accounts registered yet.</p>
+  <% } %>
+</div>

@@ -27,8 +27,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'admin'],
+      enum: ['customer', 'admin', 'supplier'],
       default: 'customer'
+    },
+    supplierInfo: {
+      companyName: { type: String, default: '' },
+      storeName: { type: String, default: '' },
+      phone: { type: String, default: '' },
+      address: { type: String, default: '' },
+      description: { type: String, default: '' },
+      isVerified: { type: Boolean, default: true }
     },
     phone: {
       type: String,
