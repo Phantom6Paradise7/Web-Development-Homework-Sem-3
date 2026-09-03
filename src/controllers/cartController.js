@@ -15,6 +15,69 @@ exports.getCart = (req, res) => {
   });
 };
 
+// API: Synchronize LocalStorage Cart with Database (validates prices and stock)
+exports.syncCart = async (req, res) => {
+  try {
+    const { items = [], coupon = null } = req.body;
+    const validatedItems = [];
+    let subtotal = 0;
+    let totalQty = 0;
+
+    for (const item of items) {
+      const prodId = item.productId || item.product;
+      if (!prodId) continue;
+      const product = await Product.findById(prodId);
+      if (product && product.stock > 0) {
+        const qty = Math.min(Math.max(1, parseInt(item.quantity) || 1), product.stock);
+        validatedItems.push({
+          productId: product._id.toString(),
+          product: product._id,
+          name: product.name,
+          slug: product.slug,
+          image: product.thumbnail,
+          price: product.price,
+          originalPrice: product.originalPrice || product.price,
+          brand: product.brand,
+          quantity: qty,
+          stock: product.stock
+        });
+        subtotal += product.price * qty;
+        totalQty += qty;
+      }
+    }
+
+    let discount = 0;
+    let validCoupon = null;
+    if (coupon && coupon.code && VALID_COUPONS[coupon.code.toUpperCase()]) {
+      validCoupon = VALID_COUPONS[coupon.code.toUpperCase()];
+      if (validCoupon.type === 'percentage') {
+        discount = (subtotal * validCoupon.value) / 100;
+      } else if (validCoupon.type === 'fixed') {
+        discount = validCoupon.value;
+      }
+    }
+
+    discount = parseFloat(Math.min(discount, subtotal).toFixed(2));
+    const shipping = (subtotal > 50 || subtotal === 0) ? 0 : 9.99;
+    const total = parseFloat(Math.max(0, subtotal - discount + shipping).toFixed(2));
+
+    const syncedCart = {
+      items: validatedItems,
+      coupon: validCoupon,
+      totalQty,
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      discount,
+      shipping,
+      total
+    };
+
+    req.session.cart = syncedCart;
+    return res.json({ success: true, cart: syncedCart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Cart sync failed' });
+  }
+};
+
 // Add item to cart (supports both AJAX JSON and Form POST)
 exports.addToCart = async (req, res, next) => {
   try {

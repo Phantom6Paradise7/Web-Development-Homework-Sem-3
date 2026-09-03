@@ -117,13 +117,13 @@ exports.placeOrder = async (req, res, next) => {
       discountPrice: cart.discount,
       couponCode: cart.coupon ? cart.coupon.code : '',
       totalPrice: cart.total,
-      orderStatus: 'placed',
+      orderStatus: 'pending',
       trackingEvents: [
         {
-          status: 'placed',
-          message: 'Order received and confirmed by Shopease Fulfillment',
+          status: 'pending',
+          message: 'Order placed and pending pickup by delivery rider',
           timestamp: new Date(),
-          location: 'Central Hub, TX'
+          location: 'Central Dispatch Hub'
         }
       ]
     });
@@ -206,7 +206,7 @@ exports.getOrderById = async (req, res, next) => {
     }
 
     // Determine current timeline progress index
-    const statusSteps = ['placed', 'processing', 'shipped', 'delivered'];
+    const statusSteps = ['pending', 'recieved', 'delivered'];
     const currentStepIndex = statusSteps.indexOf(order.orderStatus);
 
     res.render('pages/order-detail', {
@@ -215,6 +215,62 @@ exports.getOrderById = async (req, res, next) => {
       statusSteps,
       currentStepIndex
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Cancel Order & Permanently Remove from MongoDB (Per Requirement 3)
+exports.cancelOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id);
+
+    if (!order) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(404).json({ success: false, message: 'Order not found' });
+      }
+      return res.redirect('/orders?error=Order not found');
+    }
+
+    // Permission check: owner, admin, or rider can cancel
+    const isOwner = req.session.user && order.user.toString() === req.session.user._id.toString();
+    const isAdminOrRider = req.session.user && ['admin', 'rider'].includes(req.session.user.role);
+
+    if (!isOwner && !isAdminOrRider) {
+      return res.status(403).render('pages/403', {
+        title: 'Unauthorized',
+        message: 'You are not authorized to cancel this order.'
+      });
+    }
+
+    const orderNum = order.orderNumber;
+
+    // Restore stock in Product catalog
+    for (const item of order.orderItems) {
+      if (item.product) {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity }
+        });
+      }
+    }
+
+    // Permanently remove from MongoDB as requested
+    await Order.findByIdAndDelete(id);
+
+    const message = `Order ${orderNum} was cancelled and removed from the database.`;
+
+    if (req.xhr || req.headers.accept?.includes('application/json')) {
+      return res.json({ success: true, message });
+    }
+
+    const redirectUrl = req.session.user.role === 'rider'
+      ? '/rider/orders?info=' + encodeURIComponent(message)
+      : (req.session.user.role === 'admin'
+        ? '/admin/orders?info=' + encodeURIComponent(message)
+        : '/orders?info=' + encodeURIComponent(message));
+
+    res.redirect(redirectUrl);
   } catch (error) {
     next(error);
   }

@@ -12,9 +12,18 @@
       Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
     </p>
   </div>
-  <button onclick="window.print()" class="btn btn-outline btn-sm">
-    🖨️ Print Invoice Receipt
-  </button>
+  <div style="display: flex; gap: 0.75rem; align-items: center;">
+    <% if (order.orderStatus === 'pending') { %>
+      <form action="/orders/<%= order._id %>/cancel" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order? It will be permanently removed from the database.');">
+        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
+          ✕ Cancel & Remove Order
+        </button>
+      </form>
+    <% } %>
+    <button onclick="window.print()" class="btn btn-outline btn-sm">
+      🖨️ Print Invoice Receipt
+    </button>
+  </div>
 </div>
 
 <!-- Visual Tracking Progress Stepper -->
@@ -23,7 +32,13 @@
     <div>
       <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Fulfillment Status</span>
       <h3 style="font-size: 1.4rem; font-weight: 800; text-transform: capitalize; color: var(--primary);">
-        <%= order.orderStatus === 'placed' ? 'Order Confirmed' : order.orderStatus %>
+        <% if (order.orderStatus === 'delivered') { %>
+          ✓ Delivered
+        <% } else if (order.orderStatus === 'recieved') { %>
+          🛵 Recieved by Rider / In Transit
+        <% } else { %>
+          ⏳ Pending Pickup
+        <% } %>
       </h3>
     </div>
     <div style="text-align: right;">

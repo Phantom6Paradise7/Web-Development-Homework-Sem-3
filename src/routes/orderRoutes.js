@@ -8,5 +8,6 @@ router.post('/checkout', ensureAuth, orderController.placeOrder);
 router.get('/order-success/:id', ensureAuth, orderController.getOrderSuccess);
 router.get('/orders', ensureAuth, orderController.getMyOrders);
 router.get('/orders/:id', ensureAuth, orderController.getOrderById);
+router.post('/orders/:id/cancel', ensureAuth, orderController.cancelOrder);
 
 module.exports = router;

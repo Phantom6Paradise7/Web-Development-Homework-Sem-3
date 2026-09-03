@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initLiveSearch();
   initAjaxAddToCart();
+  initCardQuantitySteppers();
   initWishlistToggle();
   initProductGallery();
   initQuantityStepper();
@@ -96,7 +97,45 @@ function initLiveSearch() {
   });
 }
 
-// 2. AJAX Add to Cart with Badge Bump Animation
+// 2. On-Card Quantity Stepper (+ and - buttons on product cards)
+function initCardQuantitySteppers() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.card-qty-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const stepper = btn.closest('.card-qty-stepper');
+    if (!stepper) return;
+    const input = stepper.querySelector('.card-qty-input');
+    if (!input) return;
+
+    let currentVal = parseInt(input.value) || 1;
+    const maxStock = parseInt(input.dataset.stock) || parseInt(input.max) || 999;
+
+    if (btn.classList.contains('card-qty-plus')) {
+      if (currentVal < maxStock) {
+        input.value = currentVal + 1;
+      } else {
+        showToast(`Maximum available stock is ${maxStock}`, 'info');
+      }
+    } else if (btn.classList.contains('card-qty-minus')) {
+      if (currentVal > 1) {
+        input.value = currentVal - 1;
+      }
+    }
+  });
+
+  document.addEventListener('change', (e) => {
+    const input = e.target.closest('.card-qty-input');
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    const maxStock = parseInt(input.dataset.stock) || parseInt(input.max) || 999;
+    if (val < 1) val = 1;
+    if (val > maxStock) val = maxStock;
+    input.value = val;
+  });
+}
+
+// 3. AJAX Add to Cart with LocalStorage persistence and Badge Animation
 function initAjaxAddToCart() {
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.ajax-add-cart-btn');
@@ -104,54 +143,69 @@ function initAjaxAddToCart() {
 
     e.preventDefault();
     const productId = btn.dataset.productId;
-    // Look for nearby or modal stepper input
+    if (!productId) return;
+
+    // Look for on-card stepper, modal stepper, or detail page stepper
+    const cardWrap = btn.closest('.card-cart-action-wrap');
     const modalWrap = btn.closest('.quick-view-dialog-content');
-    const stepper = modalWrap 
-      ? modalWrap.querySelector('.stepper-input') 
-      : document.querySelector('.stepper-input');
-    const quantity = stepper ? parseInt(stepper.value) || 1 : 1;
+    const cardStepper = cardWrap ? cardWrap.querySelector('.card-qty-input') : null;
+    const modalStepper = modalWrap ? modalWrap.querySelector('.stepper-input') : null;
+    const detailStepper = document.querySelector('.product-detail-qty-input');
+
+    const quantity = cardStepper ? (parseInt(cardStepper.value) || 1) :
+                     modalStepper ? (parseInt(modalStepper.value) || 1) :
+                     detailStepper ? (parseInt(detailStepper.value) || 1) : 1;
+
+    const productPayload = {
+      productId,
+      name: btn.dataset.productName || 'Product',
+      price: parseFloat(btn.dataset.productPrice) || 0,
+      originalPrice: parseFloat(btn.dataset.productOriginal) || 0,
+      image: btn.dataset.productImage || '',
+      slug: btn.dataset.productSlug || '',
+      brand: btn.dataset.productBrand || 'Shopease',
+      stock: parseInt(btn.dataset.productStock) || 99
+    };
+
+    // Save to LocalStorage cart immediately
+    let updatedCart = null;
+    if (window.ShopeaseCart) {
+      updatedCart = window.ShopeaseCart.addItem(productPayload, quantity);
+    }
 
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = `
-      <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
         <path d="M12 2a10 10 0 0 1 10 10"></path>
       </svg>
-      Adding...
+      Added!
     `;
 
+    // Visual toast notification
+    showToast(`Added ${quantity} unit(s) of "${productPayload.name}" to cart!`);
+
+    // Bump cart badge
+    const cartBadge = document.querySelector('#cartCountBadge, .cart-count-badge');
+    if (cartBadge) {
+      cartBadge.classList.add('bump');
+      setTimeout(() => cartBadge.classList.remove('bump'), 300);
+    }
+
+    // Background sync to server session as fallback
     try {
-      const response = await fetch('/cart/add', {
+      fetch('/cart/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ productId, quantity })
-      });
+      }).catch(() => {});
+    } catch (err) {}
 
-      const data = await response.json();
-
-      if (data.success) {
-        showToast(data.message);
-
-        // Bump and update Cart Counter
-        const cartBadge = document.querySelector('.cart-count-badge');
-        if (cartBadge) {
-          cartBadge.textContent = data.cart.totalQty;
-          cartBadge.classList.add('bump');
-          setTimeout(() => cartBadge.classList.remove('bump'), 300);
-        }
-      } else {
-        showToast(data.message || 'Could not add to cart', 'error');
-      }
-    } catch (err) {
-      showToast('Network error, please try again.', 'error');
-    } finally {
+    setTimeout(() => {
       btn.disabled = false;
       btn.innerHTML = originalHtml;
-    }
+    }, 600);
   });
 }
 
@@ -380,7 +434,19 @@ function initQuickViewModal() {
                     <input type="number" class="stepper-input" value="1" min="1" max="${p.stock}" readonly style="width: 44px; height: 38px; text-align: center; border: none; font-weight: 600;">
                     <button type="button" class="stepper-btn increment" style="width: 34px; height: 38px; background: var(--bg-muted); border: none; font-size: 1.1rem; cursor: pointer;">+</button>
                   </div>
-                  <button type="button" class="btn btn-primary ajax-add-cart-btn" data-product-id="${p._id}" style="flex: 1; height: 40px;">
+                  <button 
+                    type="button" 
+                    class="btn btn-primary ajax-add-cart-btn" 
+                    data-product-id="${p._id}" 
+                    data-product-name="${p.name.replace(/"/g, '&quot;')}"
+                    data-product-price="${p.price}"
+                    data-product-original="${p.originalPrice || p.price}"
+                    data-product-image="${p.thumbnail}"
+                    data-product-slug="${p.slug}"
+                    data-product-brand="${p.brand || 'Shopease'}"
+                    data-product-stock="${p.stock}"
+                    style="flex: 1; height: 40px;"
+                  >
                     Add to Cart
                   </button>
                 </div>

@@ -693,54 +693,52 @@ async function seed() {
       ]
     });
     await customerUser.save();
-    console.log('[Seed] Created Admin (admin@store.com), Supplier (supplier@apex.com), Customer (john@example.com).');
+
+    // Delivery Rider user
+    const riderUser = new User({
+      name: 'Dave Rider',
+      email: 'rider@store.com',
+      password: 'rider123',
+      role: 'rider',
+      phone: '+1 (555) 789-0123',
+      riderInfo: {
+        vehicleType: 'Motorcycle (Yamaha MT-03)',
+        vehicleNumber: 'RD-9021',
+        phone: '+1 (555) 789-0123',
+        isAvailable: true,
+        currentLocation: 'Central Dispatch Hub'
+      }
+    });
+    await riderUser.save();
+
+    console.log('[Seed] Created Admin (admin@store.com), Supplier (supplier@apex.com), Customer (john@example.com), Rider (rider@store.com).');
 
     // 3. Create Products with sample reviews & link to supplier
     const productsToInsert = sampleProducts.map((p, index) => {
-      // Allocate half products to supplierUser, half to admin
-      const isSupplierProduct = index % 2 === 0;
+      const assignedSupplier = index % 2 === 0 ? supplierUser : adminUser;
+      const supplierLabel = index % 2 === 0 ? 'Apex Global Supplies LLC' : 'Shopease Official';
       return {
         ...p,
-        supplier: isSupplierProduct ? supplierUser._id : adminUser._id,
-        supplierName: isSupplierProduct ? supplierUser.supplierInfo.companyName : 'Shopease Official',
-        reviews: [
-          {
-            user: customerUser._id,
-            name: customerUser.name,
-            rating: 5,
-            comment: 'Absolutely exceeded my expectations! Premium build quality, sleek packaging, and fast delivery.',
-            isVerifiedPurchase: true,
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-          },
-          {
-            user: adminUser._id,
-            name: 'Sarah Jenkins',
-            rating: 4.5,
-            comment: 'Very premium touch and feel. Matches the photos perfectly. Would highly recommend!',
-            isVerifiedPurchase: true,
-            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-          }
-        ]
+        supplier: assignedSupplier._id,
+        supplierName: supplierLabel
       };
     });
 
     const createdProducts = await Product.insertMany(productsToInsert);
     console.log(`[Seed] Inserted ${createdProducts.length} rich products.`);
 
-    // 4. Update category product counts
+    // 4. Update category itemCount
     for (const cat of createdCategories) {
-      const count = await Product.countDocuments({
-        category: { $regex: new RegExp(`^${cat.name}$`, 'i') }
-      });
-      cat.itemCount = count;
-      await cat.save();
+      const count = await Product.countDocuments({ category: cat.name });
+      await Category.findByIdAndUpdate(cat._id, { itemCount: count });
     }
     console.log('[Seed] Updated category product count metrics.');
 
-    // 5. Create an initial sample order for the customer
-    const sampleOrder = new Order({
+    // 5. Create sample orders with pending and recieved statuses
+    const order1 = new Order({
       orderNumber: 'ORD-2026-1042',
       user: customerUser._id,
+      rider: riderUser._id,
       orderItems: [
         {
           product: createdProducts[0]._id,
@@ -762,43 +760,79 @@ async function seed() {
       paymentStatus: 'paid',
       paymentDetails: {
         transactionId: 'TXN-CONFIRMED-8831',
-        paidAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+        paidAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
       },
       itemsPrice: createdProducts[0].price + createdProducts[3].price,
       taxPrice: 21.75,
       shippingPrice: 0,
       discountPrice: 0,
       totalPrice: createdProducts[0].price + createdProducts[3].price + 21.75,
-      orderStatus: 'shipped',
+      orderStatus: 'recieved',
       trackingEvents: [
         {
-          status: 'placed',
-          message: 'Order placed and payment authorized',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          location: 'Shopease Fulfillment Hub'
-        },
-        {
-          status: 'processing',
-          message: 'Items packed in eco-friendly protective packaging',
+          status: 'pending',
+          message: 'Order placed and verified by warehouse',
           timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          location: 'Sorting Facility'
+          location: 'Central Dispatch Hub'
         },
         {
-          status: 'shipped',
-          message: 'Carrier picked up parcel. In transit to destination.',
-          timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000),
-          location: 'Regional Distribution Center'
+          status: 'recieved',
+          message: 'Order received and picked up by Rider Dave Rider - In Transit',
+          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+          location: 'In Transit'
         }
       ]
     });
-    await sampleOrder.save();
-    console.log('[Seed] Created sample order: ORD-2026-1042');
+    await order1.save();
+
+    const order2 = new Order({
+      orderNumber: 'ORD-2026-1043',
+      user: customerUser._id,
+      orderItems: [
+        {
+          product: createdProducts[1]._id,
+          name: createdProducts[1].name,
+          image: createdProducts[1].thumbnail,
+          price: createdProducts[1].price,
+          quantity: 2
+        }
+      ],
+      shippingAddress: {
+        fullName: 'John Doe',
+        phone: '+1 (555) 432-8765',
+        street: '120 Market Street, Apt 4B',
+        city: 'Springfield',
+        state: 'Oregon',
+        postalCode: '97477',
+        country: 'United States'
+      },
+      paymentMethod: 'cod',
+      paymentStatus: 'pending',
+      itemsPrice: createdProducts[1].price * 2,
+      taxPrice: 12.50,
+      shippingPrice: 0,
+      discountPrice: 0,
+      totalPrice: createdProducts[1].price * 2 + 12.50,
+      orderStatus: 'pending',
+      trackingEvents: [
+        {
+          status: 'pending',
+          message: 'Order created and pending pickup by delivery rider',
+          timestamp: new Date(),
+          location: 'Central Dispatch Hub'
+        }
+      ]
+    });
+    await order2.save();
+
+    console.log('[Seed] Created sample orders: ORD-2026-1042 (recieved) and ORD-2026-1043 (pending)');
 
     console.log('\n[Seed Success] Database populated cleanly!');
     console.log('------------------------------------------------------------');
     console.log('Customer Account: john@example.com     / customer123');
     console.log('Admin Account:    admin@store.com      / admin123');
     console.log('Supplier Account: supplier@apex.com    / supplier123');
+    console.log('Rider Account:    rider@store.com     / rider123');
     console.log('------------------------------------------------------------');
     process.exit(0);
   } catch (error) {

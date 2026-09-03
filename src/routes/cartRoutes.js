@@ -10,5 +10,6 @@ router.get('/cart/remove/:productId', cartController.removeFromCart); // conveni
 router.post('/cart/clear', cartController.clearCart);
 router.post('/cart/coupon', cartController.applyCoupon);
 router.post('/cart/coupon/remove', cartController.removeCoupon);
+router.post('/api/cart/sync', cartController.syncCart);
 
 module.exports = router;

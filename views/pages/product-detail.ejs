@@ -135,6 +135,13 @@
         <button 
           class="btn btn-primary btn-lg ajax-add-cart-btn" 
           data-product-id="<%= product._id %>"
+          data-product-name="<%= product.name %>"
+          data-product-price="<%= product.price %>"
+          data-product-original="<%= product.originalPrice || product.price %>"
+          data-product-image="<%= product.thumbnail %>"
+          data-product-slug="<%= product.slug %>"
+          data-product-brand="<%= product.brand %>"
+          data-product-stock="<%= product.stock %>"
           style="flex: 1;"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

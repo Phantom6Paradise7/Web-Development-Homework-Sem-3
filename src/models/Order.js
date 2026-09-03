@@ -64,8 +64,12 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true, default: 0.0 },
     orderStatus: {
       type: String,
-      enum: ['placed', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'placed'
+      enum: ['pending', 'recieved', 'delivered', 'placed', 'processing', 'shipped', 'cancelled'],
+      default: 'pending'
+    },
+    rider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
     trackingEvents: [trackingEventSchema],
     estimatedDelivery: {

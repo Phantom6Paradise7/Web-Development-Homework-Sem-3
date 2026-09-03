@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'admin', 'supplier'],
+      enum: ['customer', 'admin', 'supplier', 'rider'],
       default: 'customer'
     },
     supplierInfo: {
@@ -37,6 +37,13 @@ const userSchema = new mongoose.Schema(
       address: { type: String, default: '' },
       description: { type: String, default: '' },
       isVerified: { type: Boolean, default: true }
+    },
+    riderInfo: {
+      vehicleType: { type: String, default: 'Motorcycle' },
+      vehicleNumber: { type: String, default: '' },
+      phone: { type: String, default: '' },
+      isAvailable: { type: Boolean, default: true },
+      currentLocation: { type: String, default: 'Central Dispatch Hub' }
     },
     phone: {
       type: String,

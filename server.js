@@ -19,6 +19,7 @@ const orderRoutes = require('./src/routes/orderRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const supplierRoutes = require('./src/routes/supplierRoutes');
+const riderRoutes = require('./src/routes/riderRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -96,6 +97,7 @@ async function startServer() {
   app.use('/', authRoutes);
   app.use('/', adminRoutes);
   app.use('/', supplierRoutes);
+  app.use('/', riderRoutes);
 
   // Error Handling Middleware
   app.use(notFound);

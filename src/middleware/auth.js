@@ -35,11 +35,21 @@ const ensureSupplier = (req, res, next) => {
     title: 'Access Denied',
     message: 'You need an authorized Supplier or Admin account to access this portal.'
   });
+// Middleware to protect delivery rider routes (accessible by riders and admins)
+const ensureRider = (req, res, next) => {
+  if (req.session && req.session.user && (req.session.user.role === 'rider' || req.session.user.role === 'admin')) {
+    return next();
+  }
+  return res.status(403).render('pages/403', {
+    title: 'Access Denied',
+    message: 'You need an authorized Delivery Rider or Admin account to access this fleet portal.'
+  });
 };
 
 module.exports = {
   ensureAuth,
   ensureGuest,
   ensureAdmin,
-  ensureSupplier
+  ensureSupplier,
+  ensureRider
 };

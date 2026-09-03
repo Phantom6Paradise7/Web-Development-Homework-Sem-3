@@ -81,17 +81,40 @@
     </div>
 
     <% if (product.stock > 0) { %>
-      <button 
-        class="btn btn-primary btn-sm btn-block ajax-add-cart-btn" 
-        data-product-id="<%= product._id %>"
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        Add to Cart
-      </button>
+      <div class="card-cart-action-wrap">
+        <div class="card-qty-stepper">
+          <button type="button" class="card-qty-btn card-qty-minus" aria-label="Decrease quantity" title="Decrease">-</button>
+          <input 
+            type="number" 
+            class="card-qty-input" 
+            id="qty-<%= product._id %>" 
+            value="1" 
+            min="1" 
+            max="<%= product.stock %>"
+            data-stock="<%= product.stock %>"
+            aria-label="Product quantity"
+          >
+          <button type="button" class="card-qty-btn card-qty-plus" aria-label="Increase quantity" title="Increase">+</button>
+        </div>
+        <button 
+          class="btn btn-primary btn-sm ajax-add-cart-btn" 
+          data-product-id="<%= product._id %>"
+          data-product-name="<%= product.name %>"
+          data-product-price="<%= product.price %>"
+          data-product-original="<%= product.originalPrice || product.price %>"
+          data-product-image="<%= product.thumbnail %>"
+          data-product-slug="<%= product.slug %>"
+          data-product-brand="<%= product.brand %>"
+          data-product-stock="<%= product.stock %>"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          Add to Cart
+        </button>
+      </div>
     <% } else { %>
       <button class="btn btn-outline btn-sm btn-block" disabled style="opacity: 0.6; cursor: not-allowed; background: var(--bg-muted);">
         ✕ Sold Out

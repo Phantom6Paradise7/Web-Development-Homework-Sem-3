@@ -1,0 +1,142 @@
+<div class="rider-header-banner">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+        <span style="font-size: 1.8rem;">🛵</span>
+        <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm);">
+          Rider Fleet Console
+        </span>
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 0.4rem;">
+        Welcome, <%= currentUser.name %>!
+      </h1>
+      <p style="color: #a7f3d0; margin: 0; font-size: 0.95rem;">
+        Vehicle: <strong><%= currentUser.riderInfo ? currentUser.riderInfo.vehicleType : 'Motorcycle' %></strong> • Dispatch Hub: <strong><%= currentUser.riderInfo ? currentUser.riderInfo.currentLocation : 'Central Dispatch' %></strong>
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <span style="background: rgba(16, 185, 129, 0.3); border: 1px solid #34d399; color: #fff; padding: 0.4rem 0.9rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+        <span style="width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block;"></span> Active & Ready
+      </span>
+      <a href="/rider/orders" class="btn btn-secondary" style="background: #ffffff; color: #065f46; font-weight: 800;">
+        View All Deliveries &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Key Rider Metrics Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+  <!-- Pending Pickups -->
+  <a href="/rider/orders?status=pending" class="card" style="padding: 1.5rem; text-decoration: none; border-left: 4px solid #f59e0b; transition: var(--transition);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pending Pickups</span>
+      <span style="font-size: 1.5rem;">⏳</span>
+    </div>
+    <div style="font-size: 2rem; font-weight: 800; color: #b45309;"><%= pendingOrdersCount %></div>
+    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+      Orders awaiting fulfillment & rider pickup
+    </div>
+  </a>
+
+  <!-- In Transit / Recieved -->
+  <a href="/rider/orders?status=recieved" class="card" style="padding: 1.5rem; text-decoration: none; border-left: 4px solid #0284c7; transition: var(--transition);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">In Transit / Recieved</span>
+      <span style="font-size: 1.5rem;">🛵</span>
+    </div>
+    <div style="font-size: 2rem; font-weight: 800; color: #0369a1;"><%= recievedOrdersCount %></div>
+    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+      Currently picked up and en route to shoppers
+    </div>
+  </a>
+
+  <!-- Delivered -->
+  <a href="/rider/orders?status=delivered" class="card" style="padding: 1.5rem; text-decoration: none; border-left: 4px solid #10b981; transition: var(--transition);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Completed Deliveries</span>
+      <span style="font-size: 1.5rem;">✅</span>
+    </div>
+    <div style="font-size: 2rem; font-weight: 800; color: #15803d;"><%= deliveredOrdersCount %></div>
+    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+      Successfully delivered packages
+    </div>
+  </a>
+</div>
+
+<!-- Active Deliveries Priority Queue -->
+<div class="card" style="padding: 1.75rem; margin-bottom: 2.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+    <div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0;">Urgent Dispatch Queue</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.2rem 0 0;">
+        Orders requiring pickup or delivery action
+      </p>
+    </div>
+    <a href="/rider/orders" class="btn btn-outline btn-sm">
+      View All Orders &rarr;
+    </a>
+  </div>
+
+  <% if (activeOrders && activeOrders.length > 0) { %>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <% activeOrders.forEach(order => { %>
+        <div class="delivery-order-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+                <strong style="font-size: 1.1rem; color: var(--primary);"><%= order.orderNumber %></strong>
+                <% if (order.orderStatus === 'recieved') { %>
+                  <span class="badge badge-status-recieved">🛵 Recieved & In Transit</span>
+                <% } else { %>
+                  <span class="badge badge-status-pending">⏳ Pending Pickup</span>
+                <% } %>
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">
+                  <%= order.paymentMethod === 'cod' ? '💵 Cash on Delivery' : '💳 Prepaid Online' %>
+                </span>
+              </div>
+              <div style="font-size: 0.9rem; color: var(--text-primary); font-weight: 600;">
+                👤 <%= order.shippingAddress.fullName %> • 📞 <%= order.shippingAddress.phone %>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                📍 <%= order.shippingAddress.street %>, <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.postalCode %>
+              </div>
+            </div>
+
+            <!-- Action Stepper -->
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <% if (order.orderStatus === 'pending') { %>
+                <form action="/rider/orders/<%= order._id %>/status" method="POST">
+                  <input type="hidden" name="status" value="recieved">
+                  <button type="submit" class="btn btn-primary btn-sm" style="background: #0284c7; border-color: #0284c7;">
+                    📦 Mark as Recieved
+                  </button>
+                </form>
+              <% } else if (order.orderStatus === 'recieved') { %>
+                <form action="/rider/orders/<%= order._id %>/status" method="POST">
+                  <input type="hidden" name="status" value="delivered">
+                  <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border-color: #10b981;">
+                    ✅ Mark as Delivered
+                  </button>
+                </form>
+              <% } %>
+
+              <!-- Cancel & Remove from DB button -->
+              <form action="/rider/orders/<%= order._id %>/cancel" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order? Per store policy, it will be permanently deleted from the database and stock restored.');">
+                <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);" title="Cancel and remove from MongoDB">
+                  ✕ Cancel & Remove
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
+      <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">All Caught Up!</div>
+      <div style="font-size: 0.9rem;">There are no pending or in-transit delivery orders in the queue right now.</div>
+    </div>
+  <% } %>
+</div>

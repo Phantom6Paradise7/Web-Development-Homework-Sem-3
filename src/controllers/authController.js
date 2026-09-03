@@ -53,6 +53,8 @@ exports.postLogin = async (req, res, next) => {
       defaultRedirect = '/admin';
     } else if (user.role === 'supplier') {
       defaultRedirect = '/supplier';
+    } else if (user.role === 'rider') {
+      defaultRedirect = '/rider';
     }
 
     const returnUrl = req.session.returnTo || defaultRedirect;
