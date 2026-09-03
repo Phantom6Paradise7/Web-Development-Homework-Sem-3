@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const mongoose = require('mongoose');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -19,15 +20,15 @@ const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const supplierRoutes = require('./src/routes/supplierRoutes');
 
-// Connect to MongoDB
-connectDB();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shopease_ecommerce';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Enable trust proxy for Render / reverse proxies (enables secure cookies over HTTPS)
+app.set('trust proxy', 1);
 
 // HTTP Request logging
-if (process.env.NODE_ENV !== 'production') {
+if (!isProduction) {
   app.use(morgan('dev'));
 }
 
@@ -47,42 +48,75 @@ app.set('layout', 'layouts/main');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Express Session with MongoStore
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'shopease_default_session_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: mongoUri,
-      ttl: 14 * 24 * 60 * 60 // 14 days
-    }),
-    cookie: {
-      maxAge: 14 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production'
-    }
-  })
-);
-
-// Global cart and response locals middleware
-app.use(initCartAndLocals);
-
-// Mount Application Routes
-app.use('/', productRoutes);
-app.use('/', cartRoutes);
-app.use('/', orderRoutes);
-app.use('/', authRoutes);
-app.use('/', adminRoutes);
-app.use('/', supplierRoutes);
-
-// Error Handling Middleware
-app.use(notFound);
-app.use(errorHandler);
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`[Shopease Server] Running at http://localhost:${PORT}`);
-  console.log(`[Shopease Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+// Health Check endpoint for Render monitoring and zero-downtime deploys
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
+
+async function startServer() {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('[Shopease Server] Fatal: Could not connect to database. Server halting.');
+    process.exit(1);
+  }
+
+  // Express Session with MongoStore reusing active Mongoose connection
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shopease_ecommerce';
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'shopease_default_session_secret_key',
+      resave: false,
+      saveUninitialized: false,
+      store: MongoStore.create({
+        client: mongoose.connection.getClient(),
+        ttl: 14 * 24 * 60 * 60 // 14 days
+      }),
+      cookie: {
+        maxAge: 14 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction
+      }
+    })
+  );
+
+  // Global cart and response locals middleware
+  app.use(initCartAndLocals);
+
+  // Mount Application Routes
+  app.use('/', productRoutes);
+  app.use('/', cartRoutes);
+  app.use('/', orderRoutes);
+  app.use('/', authRoutes);
+  app.use('/', adminRoutes);
+  app.use('/', supplierRoutes);
+
+  // Error Handling Middleware
+  app.use(notFound);
+  app.use(errorHandler);
+
+  // Start server
+  const server = app.listen(PORT, () => {
+    console.log(`[Shopease Server] Running at http://localhost:${PORT}`);
+    console.log(`[Shopease Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+
+  // Graceful shutdown on SIGTERM / SIGINT for Render deploys
+  const gracefulShutdown = () => {
+    console.log('[Shopease Server] Received termination signal. Closing HTTP server...');
+    server.close(() => {
+      console.log('[Shopease Server] HTTP server closed cleanly.');
+      process.exit(0);
+    });
+  };
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
+}
+
+startServer();
