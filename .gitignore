@@ -1,3 +1,5 @@
 node_modules/
 .env
 *.pdf
+generate_*_pdf.js
+pdf_config.js
