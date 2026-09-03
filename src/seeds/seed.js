@@ -614,9 +614,23 @@ const sampleProducts = [
 
 async function seed() {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shopease_ecommerce';
-    await mongoose.connect(mongoUri);
-    console.log('[Seed] Connected to MongoDB:', mongoUri);
+    const primaryUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shopease_ecommerce';
+    const localFallback = 'mongodb://127.0.0.1:27017/shopease_ecommerce';
+
+    try {
+      await mongoose.connect(primaryUri);
+      console.log('[Seed] Connected to primary MongoDB URI.');
+    } catch (connErr) {
+      if (primaryUri !== localFallback) {
+        console.warn(`\n⚠️  [Seed Warning] Could not authenticate with MongoDB Atlas: ${connErr.message}`);
+        console.warn('   Your password or username in .env is incorrect in MongoDB Atlas.');
+        console.warn('   Falling back to local MongoDB (mongodb://127.0.0.1:27017/shopease_ecommerce)...\n');
+        await mongoose.connect(localFallback);
+        console.log('[Seed] Connected to local MongoDB successfully.');
+      } else {
+        throw connErr;
+      }
+    }
 
     // Clear existing collections
     await User.deleteMany({});
