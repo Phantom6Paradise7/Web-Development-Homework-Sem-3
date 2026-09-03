@@ -1,0 +1,10 @@
+<div style="max-width: 600px; margin: 5rem auto; text-align: center;">
+  <div style="font-size: 5rem; font-weight: 800; color: var(--danger); line-height: 1; margin-bottom: 1rem;">500</div>
+  <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem;">Internal Server Error</h1>
+  <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem;">
+    <%= typeof error !== 'undefined' ? error : 'Something unexpected happened on our end. Please try again in a moment.' %>
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="/" class="btn btn-primary">Return to Homepage</a>
+  </div>
+</div>

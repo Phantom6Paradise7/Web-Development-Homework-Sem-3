@@ -1,0 +1,83 @@
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Order Fulfillment Management</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Process customer shipments, update delivery milestones, and track logistics.</p>
+  </div>
+</div>
+
+<!-- Status Filter Tabs -->
+<div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 0.5rem;">
+  <a href="/admin/orders?status=all" class="btn btn-sm <%= activeStatus === 'all' ? 'btn-primary' : 'btn-outline' %>">All Orders</a>
+  <a href="/admin/orders?status=placed" class="btn btn-sm <%= activeStatus === 'placed' ? 'btn-primary' : 'btn-outline' %>">Placed</a>
+  <a href="/admin/orders?status=processing" class="btn btn-sm <%= activeStatus === 'processing' ? 'btn-primary' : 'btn-outline' %>">Processing</a>
+  <a href="/admin/orders?status=shipped" class="btn btn-sm <%= activeStatus === 'shipped' ? 'btn-primary' : 'btn-outline' %>">Shipped</a>
+  <a href="/admin/orders?status=delivered" class="btn btn-sm <%= activeStatus === 'delivered' ? 'btn-primary' : 'btn-outline' %>">Delivered</a>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3rem;">
+  <% if (orders && orders.length > 0) { %>
+    <% orders.forEach(order => { %>
+      <div class="card" style="padding: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Order ID</span>
+            <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary);"><%= order.orderNumber %></div>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Customer</span>
+            <div style="font-weight: 600;"><%= order.shippingAddress.fullName %> (<%= order.shippingAddress.city %>, <%= order.shippingAddress.state %>)</div>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Payment</span>
+            <div style="font-weight: 700; color: <%= order.paymentStatus === 'paid' ? '#16a34a' : '#ea580c' %>;">
+              <%= order.paymentMethod.toUpperCase() %> • <%= order.paymentStatus.toUpperCase() %> ($<%= order.totalPrice.toFixed(2) %>)
+            </div>
+          </div>
+          <div>
+            <a href="/orders/<%= order._id %>" target="_blank" class="btn btn-outline btn-sm">
+              View Receipt &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Order Items Preview -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <% order.orderItems.forEach(item => { %>
+            <div style="display: flex; align-items: center; gap: 0.6rem; background: var(--bg-muted); padding: 0.4rem 0.8rem; border-radius: var(--radius-md);">
+              <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 32px; height: 32px; border-radius: var(--radius-sm); object-fit: cover;">
+              <span style="font-size: 0.85rem; font-weight: 600;"><%= item.name %> × <%= item.quantity %></span>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Fulfillment Status Update Form -->
+        <form action="/admin/orders/<%= order._id %>/status" method="POST" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label style="font-size: 0.85rem; font-weight: 700;">Update Status:</label>
+            <select name="orderStatus" class="form-control" style="padding: 0.4rem 0.75rem; width: auto; font-size: 0.85rem;">
+              <option value="placed" <%= order.orderStatus === 'placed' ? 'selected' : '' %>>Placed</option>
+              <option value="processing" <%= order.orderStatus === 'processing' ? 'selected' : '' %>>Processing</option>
+              <option value="shipped" <%= order.orderStatus === 'shipped' ? 'selected' : '' %>>Shipped</option>
+              <option value="delivered" <%= order.orderStatus === 'delivered' ? 'selected' : '' %>>Delivered</option>
+              <option value="cancelled" <%= order.orderStatus === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 200px;">
+            <input type="text" name="trackingMessage" class="form-control" placeholder="Update message (e.g. Package arrived at distribution hub)" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+          </div>
+
+          <div style="width: 180px;">
+            <input type="text" name="location" class="form-control" placeholder="Hub / City location" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+          </div>
+
+          <button type="submit" class="btn btn-secondary btn-sm">Update Timeline</button>
+        </form>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <div style="background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 3rem; text-align: center;">
+      <p style="color: var(--text-muted);">No orders found matching filter "<%= activeStatus %>".</p>
+    </div>
+  <% } %>
+</div>

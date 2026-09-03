@@ -1,0 +1,242 @@
+<!-- Breadcrumbs -->
+<nav style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); margin: 1.5rem 0 1rem;">
+  <a href="/" style="color: var(--text-secondary);">Home</a>
+  <span>/</span>
+  <a href="/shop?category=<%= encodeURIComponent(product.category) %>" style="color: var(--text-secondary);"><%= product.category %></a>
+  <span>/</span>
+  <span style="color: var(--text-primary); font-weight: 600;"><%= product.name %></span>
+</nav>
+
+<div class="product-detail-grid">
+  <!-- Left Column: Gallery -->
+  <div class="gallery-container">
+    <div class="main-image-frame">
+      <img src="<%= product.images && product.images.length > 0 ? product.images[0] : product.thumbnail %>" alt="<%= product.name %>" id="mainDetailImage">
+    </div>
+
+    <% if (product.images && product.images.length > 1) { %>
+      <div class="thumbnails-row">
+        <% product.images.forEach((img, idx) => { %>
+          <button class="thumb-btn <%= idx === 0 ? 'active' : '' %>" data-full-src="<%= img %>" aria-label="Thumbnail <%= idx + 1 %>">
+            <img src="<%= img %>" alt="<%= product.name %> preview <%= idx + 1 %>">
+          </button>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Right Column: Details & Actions -->
+  <div>
+    <div class="detail-brand-badge"><%= product.brand %> • <%= product.category %></div>
+    <h1 class="detail-title"><%= product.name %></h1>
+
+    <!-- Rating & Stock summary -->
+    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+      <div class="product-rating" style="margin-bottom: 0;">
+        <span style="font-size: 1rem;">★ <%= product.ratings ? product.ratings.toFixed(1) : '5.0' %></span>
+        <span class="count" style="font-size: 0.875rem;">(<%= product.numReviews || 0 %> verified reviews)</span>
+      </div>
+
+      <% if (product.stock > 10) { %>
+        <span class="stock-indicator stock-in">● In Stock (<%= product.stock %> units)</span>
+      <% } else if (product.stock > 0) { %>
+        <span class="stock-indicator stock-low">⚠️ Low Stock (Only <%= product.stock %> remaining)</span>
+      <% } else { %>
+        <span class="stock-indicator stock-out">✕ Out of Stock</span>
+      <% } %>
+    </div>
+
+    <!-- Pricing Box -->
+    <div class="detail-price-box">
+      <div class="detail-current-price">$<%= product.price.toFixed(2) %></div>
+      <% if (product.originalPrice && product.originalPrice > product.price) { %>
+        <div class="detail-original-price">$<%= product.originalPrice.toFixed(2) %></div>
+        <span class="discount-tag" style="font-size: 0.85rem; padding: 0.25rem 0.6rem;">
+          Save <%= product.discountPercent %>%
+        </span>
+      <% } %>
+    </div>
+
+    <!-- Description -->
+    <p style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; margin-bottom: 1.5rem;">
+      <%= product.description %>
+    </p>
+
+    <!-- Key Highlights / Features -->
+    <% if (product.features && product.features.length > 0) { %>
+      <div style="margin-bottom: 1.75rem;">
+        <h4 style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.75rem; color: var(--text-secondary);">
+          Key Highlights
+        </h4>
+        <ul class="features-list">
+          <% product.features.forEach(feat => { %>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span><%= feat %></span>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <!-- Quantity & Add to Cart / Buy Now Controls -->
+    <% if (product.stock > 0) { %>
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <span style="font-size: 0.9rem; font-weight: 600;">Quantity:</span>
+        <div class="quantity-stepper">
+          <button type="button" class="stepper-btn decrement" aria-label="Decrease quantity">-</button>
+          <input type="number" class="stepper-input" value="1" min="1" max="<%= product.stock %>" readonly>
+          <button type="button" class="stepper-btn increment" aria-label="Increase quantity">+</button>
+        </div>
+      </div>
+
+      <div class="detail-action-buttons">
+        <button 
+          class="btn btn-primary btn-lg ajax-add-cart-btn" 
+          data-product-id="<%= product._id %>"
+          style="flex: 1;"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          Add to Cart
+        </button>
+
+        <!-- Buy Now direct form -->
+        <form action="/cart/add" method="POST" style="flex: 1;">
+          <input type="hidden" name="productId" value="<%= product._id %>">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="btn btn-secondary btn-lg btn-block">
+            Buy Now
+          </button>
+        </form>
+
+        <button 
+          class="btn btn-outline btn-lg wishlist-toggle-btn" 
+          data-product-id="<%= product._id %>"
+          style="position: static; width: auto; height: auto; border-radius: var(--radius-lg); padding: 0.9rem;"
+          aria-label="Wishlist"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+      </div>
+    <% } else { %>
+      <div class="alert alert-error">
+        This item is currently sold out. Check back soon or browse related alternatives below.
+      </div>
+    <% } %>
+
+    <!-- Specifications Table -->
+    <% if (product.specs && product.specs.length > 0) { %>
+      <div style="margin-top: 2.5rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">Technical Specifications</h4>
+        <table class="specs-table">
+          <tbody>
+            <% product.specs.forEach(s => { %>
+              <tr>
+                <th><%= s.key %></th>
+                <td><%= s.value %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Customer Reviews Section -->
+<section style="margin: 4rem 0; border-top: 1px solid var(--border-subtle); padding-top: 3rem;">
+  <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem;">
+    <!-- Review Summary & Add Review Form -->
+    <div>
+      <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Customer Reviews</h3>
+      <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <div style="font-size: 3rem; font-weight: 800; color: var(--text-primary);"><%= product.ratings ? product.ratings.toFixed(1) : '5.0' %></div>
+        <div>
+          <div style="color: #f59e0b; font-size: 1.1rem;">★★★★★</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);"><%= product.numReviews || 0 %> total reviews</div>
+        </div>
+      </div>
+
+      <!-- Add Review Form -->
+      <div class="card" style="padding: 1.5rem;">
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Write a Review</h4>
+        <% if (currentUser) { %>
+          <form action="/product/<%= product._id %>/reviews" method="POST">
+            <div class="form-group">
+              <label class="form-label" for="reviewRating">Rating</label>
+              <select name="rating" id="reviewRating" class="form-control" required>
+                <option value="5">★★★★★ - Excellent (5 Stars)</option>
+                <option value="4">★★★★☆ - Very Good (4 Stars)</option>
+                <option value="3">★★★☆☆ - Average (3 Stars)</option>
+                <option value="2">★★☆☆☆ - Below Expectations (2 Stars)</option>
+                <option value="1">★☆☆☆☆ - Poor (1 Star)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reviewComment">Your Feedback</label>
+              <textarea name="comment" id="reviewComment" rows="4" class="form-control" placeholder="What did you like or dislike about this product?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit Verified Review</button>
+          </form>
+        <% } else { %>
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+            You must be logged in to share your product experience.
+          </p>
+          <a href="/auth/login" class="btn btn-outline btn-block">Sign In to Review</a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div>
+      <% if (product.reviews && product.reviews.length > 0) { %>
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <% product.reviews.forEach(review => { %>
+            <div class="card" style="padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <strong style="font-size: 0.95rem;"><%= review.name %></strong>
+                  <% if (review.isVerifiedPurchase) { %>
+                    <span style="font-size: 0.7rem; background: #dcfce7; color: #15803d; padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-weight: 700;">
+                      ✓ Verified Buyer
+                    </span>
+                  <% } %>
+                </div>
+                <div style="color: #f59e0b; font-size: 0.9rem;">
+                  <%= '★'.repeat(review.rating) %><%= '☆'.repeat(5 - review.rating) %>
+                </div>
+              </div>
+              <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                "<%= review.comment %>"
+              </p>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div style="padding: 3rem; text-align: center; background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
+          <p style="color: var(--text-muted);">No reviews written yet. Be the first to share your thoughts!</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- Related Products Section -->
+<% if (relatedProducts && relatedProducts.length > 0) { %>
+  <section style="margin: 4rem 0; border-top: 1px solid var(--border-subtle); padding-top: 3rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem;">Similar Products You Might Like</h2>
+    <div class="products-grid">
+      <% relatedProducts.forEach(rel => { %>
+        <%- include('../partials/product-card', { product: rel }) %>
+      <% }) %>
+    </div>
+  </section>
+<% } %>

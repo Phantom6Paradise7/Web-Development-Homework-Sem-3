@@ -1,0 +1,79 @@
+<div style="margin: 2rem 0 1.5rem;">
+  <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Account Profile</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your personal information, contact credentials, and default addresses.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
+  <!-- Personal Details Form -->
+  <div class="card" style="padding: 2rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">Personal Details</h3>
+    <form action="/profile" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="profileName">Full Name</label>
+        <input type="text" name="name" id="profileName" class="form-control" value="<%= profileUser.name %>" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="profileEmail">Email Address</label>
+        <input type="email" id="profileEmail" class="form-control" value="<%= profileUser.email %>" disabled style="background: var(--bg-muted); cursor: not-allowed;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Email cannot be changed directly</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="profilePhone">Phone Number</label>
+        <input type="tel" name="phone" id="profilePhone" class="form-control" value="<%= profileUser.phone || '' %>" placeholder="+1 (555) 000-0000">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account Role</label>
+        <div style="font-weight: 700; text-transform: uppercase; font-size: 0.85rem; color: var(--primary);">
+          <%= profileUser.role %>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Profile Changes</button>
+    </form>
+  </div>
+
+  <!-- Saved Addresses -->
+  <div class="card" style="padding: 2rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">Saved Delivery Addresses</h3>
+
+    <% if (profileUser.addresses && profileUser.addresses.length > 0) { %>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <% profileUser.addresses.forEach((addr, i) => { %>
+          <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; background: var(--bg-surface);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <strong style="font-size: 0.95rem;"><%= addr.fullName %></strong>
+              <% if (addr.isDefault) { %>
+                <span style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-weight: 700;">
+                  Default
+                </span>
+              <% } %>
+            </div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              <%= addr.street %><br>
+              <%= addr.city %>, <%= addr.state %> <%= addr.postalCode %><br>
+              <%= addr.country %>
+            </div>
+            <% if (addr.phone) { %>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">
+                Phone: <%= addr.phone %>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        No saved addresses found. Addresses entered during checkout will be saved here automatically.
+      </p>
+    <% } %>
+
+    <div style="margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+      <a href="/orders" class="btn btn-outline btn-block">
+        📦 View Past Orders History
+      </a>
+    </div>
+  </div>
+</div>

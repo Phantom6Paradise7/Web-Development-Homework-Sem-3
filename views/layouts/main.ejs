@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Shopease - Premium Online Shopping' %></title>
+  <meta name="description" content="Shop the latest in premium electronics, contemporary fashion, athletic footwear, and designer living essentials with fast nationwide shipping.">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <!-- Global Top Announcement -->
+  <div class="top-announcement">
+    🚀 Spring Sale: Get <strong>20% OFF</strong> your order with promo code <span class="highlight">SAVE20</span> • Free Express Shipping over $50!
+  </div>
+
+  <!-- Main Navigation Header -->
+  <%- include('../partials/navbar') %>
+
+  <!-- Main Content Body -->
+  <main class="container">
+    <%- include('../partials/alerts') %>
+    <%- body %>
+  </main>
+
+  <!-- Global Footer -->
+  <%- include('../partials/footer') %>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Client Script -->
+  <script src="/js/main.js"></script>
+</body>
+</html>

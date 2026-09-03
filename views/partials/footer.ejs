@@ -1,0 +1,61 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="brand-logo" style="margin-bottom: 1rem; color: #fff;">
+          <div class="brand-icon">🛍️</div>
+          <span style="color: #fff; -webkit-text-fill-color: #fff;">Shopease</span>
+        </div>
+        <p style="font-size: 0.875rem; line-height: 1.6; color: #94a3b8; max-width: 320px;">
+          Next-generation e-commerce platform delivering curated electronics, designer apparel, premium footwear, and lifestyle goods with end-to-end transparent fulfillment.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul class="footer-links">
+          <li><a href="/shop">All Products</a></li>
+          <li><a href="/shop?category=Electronics">Electronics & Audio</a></li>
+          <li><a href="/shop?category=Fashion">Apparel & Fashion</a></li>
+          <li><a href="/shop?category=Footwear">Athletic Footwear</a></li>
+          <li><a href="/shop?category=Home%20%26%20Living">Home & Living</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Customer Care</h4>
+        <ul class="footer-links">
+          <li><a href="/orders">Track My Order</a></li>
+          <li><a href="/cart">My Shopping Cart</a></li>
+          <li><a href="/wishlist">Saved Wishlist</a></li>
+          <li><a href="/profile">Account Settings</a></li>
+          <li><a href="/admin">Merchant Portal</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Stay in the Loop</h4>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1rem;">
+          Subscribe for early drop access, seasonal flash sales, and exclusive member discounts.
+        </p>
+        <form onsubmit="event.preventDefault(); showToast('Subscribed! Welcome to Shopease VIP perks.');" style="display: flex; gap: 0.5rem;">
+          <input 
+            type="email" 
+            placeholder="Enter your email" 
+            required 
+            style="flex: 1; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 0.85rem;"
+          >
+          <button type="submit" class="btn btn-primary btn-sm">Join</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© <%= new Date().getFullYear() %> Shopease Inc. All rights reserved. Built with Node.js, Express, EJS & MongoDB.</div>
+      <div style="display: flex; gap: 1.5rem;">
+        <span>🔒 256-Bit SSL Encryption</span>
+        <span>💳 Multi-Payment Ready</span>
+      </div>
+    </div>
+  </div>
+</footer>

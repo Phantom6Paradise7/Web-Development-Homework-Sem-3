@@ -1,0 +1,148 @@
+<!-- Breadcrumbs -->
+<nav style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); margin: 1.5rem 0 1rem;">
+  <a href="/orders" style="color: var(--text-secondary);">My Orders</a>
+  <span>/</span>
+  <span style="color: var(--text-primary); font-weight: 600;">Order #<%= order.orderNumber %></span>
+</nav>
+
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Order #<%= order.orderNumber %></h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+    </p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline btn-sm">
+    🖨️ Print Invoice Receipt
+  </button>
+</div>
+
+<!-- Visual Tracking Progress Stepper -->
+<div class="card" style="padding: 2.5rem 2rem; margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Fulfillment Status</span>
+      <h3 style="font-size: 1.4rem; font-weight: 800; text-transform: capitalize; color: var(--primary);">
+        <%= order.orderStatus === 'placed' ? 'Order Confirmed' : order.orderStatus %>
+      </h3>
+    </div>
+    <div style="text-align: right;">
+      <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Estimated Arrival</span>
+      <div style="font-size: 1.1rem; font-weight: 700;">
+        <%= new Date(order.estimatedDelivery).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stepper circles -->
+  <div class="timeline-stepper">
+    <% statusSteps.forEach((step, index) => { %>
+      <div class="timeline-step <%= index < currentStepIndex ? 'completed' : (index === currentStepIndex ? 'current' : '') %>">
+        <div class="step-circle">
+          <% if (index < currentStepIndex) { %>
+            ✓
+          <% } else { %>
+            <%= index + 1 %>
+          <% } %>
+        </div>
+        <div class="step-label"><%= step %></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Tracking Events Feed -->
+  <% if (order.trackingEvents && order.trackingEvents.length > 0) { %>
+    <div style="margin-top: 3rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem;">Shipment History & Updates</h4>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <% order.trackingEvents.slice().reverse().forEach(evt => { %>
+          <div style="display: flex; gap: 1rem; align-items: flex-start;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;"><%= evt.message %></div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                <%= new Date(evt.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %> • Location: <%= evt.location %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Two Columns: Shipping & Invoice -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+  <!-- Shipping & Payment Info -->
+  <div class="card" style="padding: 1.75rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem;">Delivery & Payment Details</h3>
+
+    <div style="margin-bottom: 1.25rem;">
+      <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Delivery Address</div>
+      <div style="font-weight: 600; font-size: 0.95rem; margin-top: 0.25rem;"><%= order.shippingAddress.fullName %></div>
+      <div style="color: var(--text-secondary); font-size: 0.9rem;"><%= order.shippingAddress.street %></div>
+      <div style="color: var(--text-secondary); font-size: 0.9rem;">
+        <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.postalCode %>
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.9rem;"><%= order.shippingAddress.country %></div>
+      <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Phone: <%= order.shippingAddress.phone %></div>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+      <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Payment Method</div>
+      <div style="font-weight: 600; font-size: 0.95rem; text-transform: uppercase; margin-top: 0.25rem;">
+        <%= order.paymentMethod.replace('_', ' ') %>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Status: <strong style="color: <%= order.paymentStatus === 'paid' ? '#16a34a' : '#ea580c' %>;"><%= order.paymentStatus.toUpperCase() %></strong>
+      </div>
+      <% if (order.paymentDetails && order.paymentDetails.transactionId) { %>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+          Txn ID: <%= order.paymentDetails.transactionId %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Order Receipt / Breakdown -->
+  <div class="card" style="padding: 1.75rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem;">Order Invoice Breakdown</h3>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+      <% order.orderItems.forEach(item => { %>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+          <div>
+            <span style="font-weight: 600;"><%= item.name %></span>
+            <span style="color: var(--text-muted);"> × <%= item.quantity %></span>
+          </div>
+          <strong>$<%= (item.price * item.quantity).toFixed(2) %></strong>
+        </div>
+      <% }) %>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+      <div style="display: flex; justify-content: space-between;">
+        <span>Items Subtotal</span>
+        <span>$<%= order.itemsPrice.toFixed(2) %></span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Shipping</span>
+        <span><%= order.shippingPrice === 0 ? 'FREE' : '$' + order.shippingPrice.toFixed(2) %></span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Estimated Sales Tax</span>
+        <span>$<%= order.taxPrice.toFixed(2) %></span>
+      </div>
+      <% if (order.discountPrice > 0) { %>
+        <div style="display: flex; justify-content: space-between; color: #16a34a;">
+          <span>Discount (<%= order.couponCode %>)</span>
+          <span>-$<%= order.discountPrice.toFixed(2) %></span>
+        </div>
+      <% } %>
+      <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--text-primary); border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.25rem;">
+        <span>Total Paid</span>
+        <span style="color: var(--primary);">$<%= order.totalPrice.toFixed(2) %></span>
+      </div>
+    </div>
+  </div>
+</div>

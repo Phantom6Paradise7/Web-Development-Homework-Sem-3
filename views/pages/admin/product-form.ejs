@@ -1,0 +1,98 @@
+<div style="max-width: 800px; margin: 2rem auto 3rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/admin/products" style="color: var(--text-muted); font-size: 0.85rem;">&larr; Back to Inventory</a>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.5rem;">
+      <%= isEdit ? 'Edit Product' : 'Add New Product' %>
+    </h1>
+  </div>
+
+  <div class="card" style="padding: 2.5rem 2rem;">
+    <form action="<%= isEdit ? `/admin/products/${product._id}/edit` : '/admin/products/new' %>" method="POST">
+      <!-- Name & Brand -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prodName">Product Title *</label>
+          <input type="text" name="name" id="prodName" class="form-control" required value="<%= product.name || '' %>" placeholder="e.g. Studio Pro Noise Cancelling Headphones">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prodBrand">Brand / Manufacturer *</label>
+          <input type="text" name="brand" id="prodBrand" class="form-control" required value="<%= product.brand || '' %>" placeholder="e.g. Acoustix">
+        </div>
+      </div>
+
+      <!-- Category & Stock -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prodCat">Category *</label>
+          <select name="category" id="prodCat" class="form-control" required>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.name %>" <%= product.category === cat.name ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prodStock">Stock Inventory Quantity *</label>
+          <input type="number" name="stock" id="prodStock" class="form-control" required min="0" value="<%= product.stock !== undefined ? product.stock : 25 %>">
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prodPrice">Selling Price ($) *</label>
+          <input type="number" step="0.01" name="price" id="prodPrice" class="form-control" required min="0" value="<%= product.price || '' %>" placeholder="99.99">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prodOrigPrice">Original / Compare Price ($)</label>
+          <input type="number" step="0.01" name="originalPrice" id="prodOrigPrice" class="form-control" min="0" value="<%= product.originalPrice || '' %>" placeholder="129.99">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Leave empty if no discount</span>
+        </div>
+      </div>
+
+      <!-- Image URLs -->
+      <div class="form-group">
+        <label class="form-label" for="prodThumbnail">Primary Thumbnail URL *</label>
+        <input type="url" name="thumbnail" id="prodThumbnail" class="form-control" required value="<%= product.thumbnail || '' %>" placeholder="https://images.unsplash.com/photo-...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="prodImages">Additional Image URLs (comma separated)</label>
+        <input type="text" name="images" id="prodImages" class="form-control" value="<%= product.images ? product.images.join(', ') : '' %>" placeholder="https://image1.jpg, https://image2.jpg">
+      </div>
+
+      <!-- Merchandising Badge -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prodBadge">Merchandising Badge</label>
+          <input type="text" name="badge" id="prodBadge" class="form-control" value="<%= product.badge || '' %>" placeholder="e.g. Best Seller, Trending, Hot Deal">
+        </div>
+        <div class="form-group" style="display: flex; gap: 1.5rem; align-items: center; margin-top: 1.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+            <input type="checkbox" name="isFeatured" value="true" <%= product.isFeatured ? 'checked' : '' %>>
+            <span>Feature on Homepage</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+            <input type="checkbox" name="isTrending" value="true" <%= product.isTrending ? 'checked' : '' %>>
+            <span>Mark as Trending</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label" for="prodDesc">Product Description *</label>
+        <textarea name="description" id="prodDesc" rows="5" class="form-control" required placeholder="Detailed product specifications, materials, and warranty information..."><%= product.description || '' %></textarea>
+      </div>
+
+      <!-- Submit buttons -->
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+        <a href="/admin/products" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <%= isEdit ? 'Save Changes' : 'Create Listing' %>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

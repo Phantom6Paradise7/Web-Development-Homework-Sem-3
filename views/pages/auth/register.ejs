@@ -1,0 +1,71 @@
+<div style="max-width: 460px; margin: 3.5rem auto;">
+  <div class="card" style="padding: 2.5rem 2rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛍️</div>
+      <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Create Your Account</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Join Shopease for personalized shopping & expedited checkout</p>
+    </div>
+
+    <form action="/auth/register" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="regName">Full Name</label>
+        <input 
+          type="text" 
+          name="name" 
+          id="regName" 
+          class="form-control" 
+          placeholder="e.g. Alex Rivera" 
+          required 
+          value="<%= typeof name !== 'undefined' ? name : '' %>"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regEmail">Email Address</label>
+        <input 
+          type="email" 
+          name="email" 
+          id="regEmail" 
+          class="form-control" 
+          placeholder="alex@example.com" 
+          required 
+          value="<%= typeof email !== 'undefined' ? email : '' %>"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regPass">Password</label>
+        <input 
+          type="password" 
+          name="password" 
+          id="regPass" 
+          class="form-control" 
+          placeholder="At least 6 characters" 
+          required 
+          minlength="6"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regPassConfirm">Confirm Password</label>
+        <input 
+          type="password" 
+          name="confirmPassword" 
+          id="regPassConfirm" 
+          class="form-control" 
+          placeholder="Re-enter your password" 
+          required 
+          minlength="6"
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
+        Register Account
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.875rem; color: var(--text-secondary);">
+      Already have an account? <a href="/auth/login" style="color: var(--primary); font-weight: 700;">Sign In</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,99 @@
+<div style="margin: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--primary);">Merchant Command Center</span>
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Store Overview & Analytics</h1>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/admin/products/new" class="btn btn-primary btn-sm">+ Add New Product</a>
+    <a href="/admin/orders" class="btn btn-outline btn-sm">Manage Orders</a>
+  </div>
+</div>
+
+<!-- Key Performance Metrics Grid -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+  <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--primary);">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Revenue</div>
+    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$<%= totalRevenue %></div>
+    <div style="font-size: 0.75rem; color: #16a34a; margin-top: 0.25rem;">● Realized Gross Sales</div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; border-left: 4px solid #06b6d4;">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Orders</div>
+    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalOrders %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">All lifetime orders</div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; border-left: 4px solid #10b981;">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Active Catalog Items</div>
+    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalProducts %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><a href="/admin/products" style="color: var(--primary); font-weight: 600;">View Catalog &rarr;</a></div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; border-left: 4px solid #f59e0b;">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Registered Customers</div>
+    <div style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);"><%= totalCustomers %></div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Verified buyer profiles</div>
+  </div>
+</div>
+
+<!-- Low Stock Warnings & Alerts -->
+<% if (lowStockProducts && lowStockProducts.length > 0) { %>
+  <div class="alert alert-error" style="margin-bottom: 2rem;">
+    <div style="font-size: 1.3rem;">⚠️</div>
+    <div>
+      <strong>Inventory Replenishment Alert:</strong> <%= lowStockProducts.length %> products are currently at or below 5 units:
+      <span style="font-weight: 600;">
+        <%= lowStockProducts.map(p => `${p.name} (${p.stock} left)`).join(', ') %>
+      </span>
+      — <a href="/admin/products" style="text-decoration: underline; font-weight: 700;">Update Stock</a>
+    </div>
+  </div>
+<% } %>
+
+<!-- Recent Orders Table -->
+<div class="card" style="padding: 2rem; margin-bottom: 3rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 800;">Recent Customer Orders</h3>
+    <a href="/admin/orders" style="color: var(--primary); font-weight: 600; font-size: 0.875rem;">View All Orders &rarr;</a>
+  </div>
+
+  <% if (recentOrders && recentOrders.length > 0) { %>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 1.5px solid var(--border-subtle); text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+          <th style="padding: 0.75rem 0.5rem;">Order #</th>
+          <th style="padding: 0.75rem 0.5rem;">Customer</th>
+          <th style="padding: 0.75rem 0.5rem;">Date</th>
+          <th style="padding: 0.75rem 0.5rem;">Total</th>
+          <th style="padding: 0.75rem 0.5rem;">Fulfillment</th>
+          <th style="padding: 0.75rem 0.5rem; text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentOrders.forEach(o => { %>
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: 1rem 0.5rem; font-weight: 700; color: var(--primary);"><%= o.orderNumber %></td>
+            <td style="padding: 1rem 0.5rem;">
+              <div style="font-weight: 600;"><%= o.shippingAddress.fullName %></div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);"><%= o.user ? o.user.email : '' %></div>
+            </td>
+            <td style="padding: 1rem 0.5rem; color: var(--text-secondary);">
+              <%= new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+            </td>
+            <td style="padding: 1rem 0.5rem; font-weight: 700;">$<%= o.totalPrice.toFixed(2) %></td>
+            <td style="padding: 1rem 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); background: <%= o.orderStatus === 'delivered' ? '#dcfce7' : (o.orderStatus === 'shipped' ? '#eff6ff' : '#fef3c7') %>; color: <%= o.orderStatus === 'delivered' ? '#15803d' : (o.orderStatus === 'shipped' ? '#1d4ed8' : '#b45309') %>;">
+                <%= o.orderStatus %>
+              </span>
+            </td>
+            <td style="padding: 1rem 0.5rem; text-align: right;">
+              <a href="/orders/<%= o._id %>" class="btn btn-outline btn-sm">Inspect</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p style="color: var(--text-muted); text-align: center; padding: 2rem 0;">No orders recorded yet.</p>
+  <% } %>
+</div>
